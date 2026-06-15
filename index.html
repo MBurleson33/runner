@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0d0d0d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="PaceUp" />
+  <title>PaceUp – Run/Walk Trainer</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d0d0d;
+  --surface:  #161616;
+  --surface2: #1f1f1f;
+  --border:   #2a2a2a;
+  --run:      #e8ff47;
+  --walk:     #47b8ff;
+  --muted:    #555;
+  --text:     #f0f0f0;
+  --text2:    #999;
+  --radius:   12px;
+  --mono:     'DM Mono', monospace;
+  --sans:     'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* SCREENS */
+.screen { display: none; width: 100%; max-width: 480px; flex-direction: column; padding: 20px; gap: 16px; }
+.screen.active { display: flex; }
+
+/* HEADER */
+header {
+  width: 100%; max-width: 480px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 20px 0;
+}
+.logo { font-family: var(--mono); font-size: 1.1rem; font-weight: 500; letter-spacing: -.03em; color: var(--run); }
+.logo span { color: var(--text2); }
+.icon-btn {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text2); width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.icon-btn:hover { background: var(--border); color: var(--text); }
+
+/* ── LEVEL SELECT SCREEN ── */
+.screen-label {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+}
+.level-grid { display: flex; flex-direction: column; gap: 10px; }
+
+.level-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; cursor: pointer; transition: border-color .15s, background .15s;
+  display: flex; align-items: flex-start; gap: 14px; position: relative;
+}
+.level-card:hover { border-color: #444; background: #1a1a1a; }
+.level-card.selected { border-color: var(--run); background: rgba(232,255,71,.04); }
+.level-card.locked { opacity: .35; cursor: not-allowed; }
+
+.level-badge {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  background: var(--surface2);
+}
+.level-card.selected .level-badge { background: rgba(232,255,71,.15); }
+
+.level-info { flex: 1; min-width: 0; }
+.level-name { font-size: .95rem; font-weight: 600; margin-bottom: 3px; }
+.level-desc { font-size: .78rem; color: var(--text2); line-height: 1.45; margin-bottom: 8px; }
+
+.level-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill {
+  padding: 3px 9px; border-radius: 99px; font-family: var(--mono);
+  font-size: .68rem; border: 1px solid var(--border); background: var(--surface2); color: var(--text2);
+}
+.pill.run-pill  { border-color: rgba(232,255,71,.3); color: var(--run);  background: rgba(232,255,71,.07); }
+.pill.walk-pill { border-color: rgba(71,184,255,.3); color: var(--walk); background: rgba(71,184,255,.07); }
+
+.check-mark {
+  position: absolute; top: 14px; right: 14px;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--run);
+  display: none; align-items: center; justify-content: center;
+}
+.level-card.selected .check-mark { display: flex; }
+
+.week-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: var(--surface2); border-radius: 8px;
+  font-size: .78rem; color: var(--text2); cursor: pointer;
+  border: 1px solid transparent; transition: border-color .15s;
+  margin-top: 2px;
+}
+.week-row:hover { border-color: var(--border); }
+.week-row.active-week { border-color: var(--run); color: var(--text); }
+.week-num { font-family: var(--mono); color: var(--text); font-size: .8rem; font-weight: 500; }
+.week-tag { font-family: var(--mono); font-size: .68rem; padding: 2px 7px; border-radius: 99px; background: rgba(232,255,71,.12); color: var(--run); }
+.week-tag.done { background: rgba(255,255,255,.07); color: var(--muted); }
+
+.btn-start-big {
+  background: var(--run); color: #000; border: none; border-radius: var(--radius);
+  padding: 17px; font-family: var(--sans); font-size: 1rem; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .15s, transform .1s;
+}
+.btn-start-big:hover { opacity: .9; }
+.btn-start-big:active { transform: scale(.98); }
+.btn-start-big:disabled { opacity: .35; cursor: not-allowed; }
+
+/* ── WORKOUT SCREEN ── */
+.ring-wrap {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  margin: 4px auto;
+}
+.ring-svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--surface2); stroke-width: 10; }
+.ring-prog {
+  fill: none; stroke-width: 10; stroke-linecap: round; stroke: var(--run);
+  transition: stroke-dashoffset .8s linear, stroke .35s;
+}
+.ring-inner {
+  position: absolute; display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+}
+.phase-eyebrow { font-family: var(--mono); font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; color: var(--text2); }
+.phase-time { font-family: var(--mono); font-size: 3.2rem; font-weight: 500; line-height: 1; color: var(--run); transition: color .3s; }
+.phase-name { font-size: .95rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--run); transition: color .3s; }
+
+.interval-bar { display: flex; align-items: center; gap: 10px; }
+.interval-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.interval-fill { height: 100%; background: var(--run); border-radius: 99px; transition: width .3s, background .3s; }
+.interval-lbl { font-family: var(--mono); font-size: .7rem; color: var(--text2); white-space: nowrap; }
+
+.next-up {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.next-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--walk); flex-shrink: 0; }
+.next-txt { font-size: .82rem; color: var(--text2); }
+.next-txt strong { color: var(--text); font-weight: 500; }
+
+.controls { display: flex; gap: 10px; }
+.btn {
+  flex: 1; padding: 15px; border-radius: var(--radius); border: none;
+  font-family: var(--sans); font-size: .92rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: transform .1s, opacity .15s;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-primary { background: var(--run); color: #000; flex: 2; font-size: 1rem; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 11px; display: flex; flex-direction: column; gap: 3px; }
+.stat-val { font-family: var(--mono); font-size: 1.25rem; font-weight: 500; }
+.stat-lbl { font-size: .68rem; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; }
+
+.level-chip {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); transition: border-color .15s;
+}
+.level-chip:hover { border-color: #444; }
+.level-chip-name { font-size: .82rem; font-weight: 500; }
+.level-chip-week { font-family: var(--mono); font-size: .72rem; color: var(--text2); }
+.level-chip-arrow { margin-left: auto; color: var(--muted); }
+
+/* Phase colors */
+body.p-walk .phase-time, body.p-walk .phase-name { color: var(--walk); }
+body.p-walk .ring-prog { stroke: var(--walk); }
+body.p-walk .interval-fill { background: var(--walk); }
+body.p-walk .btn-primary { background: var(--walk); }
+
+/* Complete */
+.complete-banner {
+  display: none; flex-direction: column; align-items: center; gap: 10px;
+  padding: 20px; background: var(--surface); border: 1px solid var(--run);
+  border-radius: var(--radius); text-align: center;
+}
+.complete-banner.show { display: flex; }
+.complete-icon { font-size: 2.6rem; }
+.complete-title { font-size: 1.15rem; font-weight: 700; }
+.complete-sub { font-size: .82rem; color: var(--text2); }
+.complete-next { font-size: .82rem; color: var(--run); font-weight: 500; margin-top: 4px; }
+
+/* Settings panel */
+.overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75);
+  z-index: 100; align-items: flex-end; justify-content: center;
+}
+.overlay.open { display: flex; }
+.panel {
+  width: 100%; max-width: 480px; background: var(--surface);
+  border-top: 1px solid var(--border); border-radius: 20px 20px 0 0;
+  padding: 24px 20px 32px; display: flex; flex-direction: column; gap: 18px;
+  animation: slideUp .22s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.panel-hdr { display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 1rem; font-weight: 600; }
+.close-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; }
+.toggle-label { font-size: .88rem; }
+.toggle-sub { font-size: .75rem; color: var(--text2); }
+.toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 99px; cursor: pointer; transition: background .2s; }
+.toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; background: var(--text2); border-radius: 50%; transition: transform .2s, background .2s; }
+.toggle input:checked + .toggle-slider { background: var(--run); border-color: var(--run); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: #000; }
+.btn-save { background: var(--run); color: #000; border: none; border-radius: var(--radius); padding: 15px; font-family: var(--sans); font-size: .95rem; font-weight: 700; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) { *, .ring-prog, .interval-fill { transition: none !important; } }
+</style>
+</head>
+<body class="p-run">
+
+<header>
+  <div class="logo">Pace<span>Up</span></div>
+  <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</header>
+
+<!-- ── LEVEL SELECT SCREEN ── -->
+<div class="screen active" id="screenSelect">
+  <div class="screen-label">Choose your training level</div>
+
+  <div class="level-grid" id="levelGrid"></div>
+
+  <button class="btn-start-big" id="btnGoWorkout" disabled>
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Start Workout
+  </button>
+</div>
+
+<!-- ── WORKOUT SCREEN ── -->
+<div class="screen" id="screenWorkout">
+
+  <!-- Level chip -->
+  <div class="level-chip" id="levelChip">
+    <div>
+      <div class="level-chip-name" id="chipName">–</div>
+      <div class="level-chip-week" id="chipWeek">–</div>
+    </div>
+    <div class="level-chip-arrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+  </div>
+
+  <!-- Ring -->
+  <div class="ring-wrap">
+    <svg class="ring-svg" id="ringSvg" width="210" height="210" viewBox="0 0 210 210">
+      <circle class="ring-bg" cx="105" cy="105" r="95"/>
+      <circle class="ring-prog" id="ringProg" cx="105" cy="105" r="95"
+        stroke-dasharray="596.9" stroke-dashoffset="0"/>
+    </svg>
+    <div class="ring-inner">
+      <div class="phase-eyebrow">time left</div>
+      <div class="phase-time" id="phaseTime">0:00</div>
+      <div class="phase-name" id="phaseName">Ready</div>
+    </div>
+  </div>
+
+  <!-- Interval bar -->
+  <div class="interval-bar">
+    <div class="interval-track"><div class="interval-fill" id="intFill" style="width:0%"></div></div>
+    <div class="interval-lbl" id="intLbl">0 / 0</div>
+  </div>
+
+  <!-- Next up -->
+  <div class="next-up">
+    <div class="next-dot" id="nextDot"></div>
+    <div class="next-txt" id="nextTxt">Press Start to begin</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn btn-secondary" id="skipBtn" disabled>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+      Skip
+    </button>
+    <button class="btn btn-primary" id="startBtn">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start
+    </button>
+    <button class="btn btn-secondary" id="resetBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+      Reset
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card"><div class="stat-val" id="sTotalTime">0:00</div><div class="stat-lbl">Total Time</div></div>
+    <div class="stat-card"><div class="stat-val" id="sRunTime">0:00</div><div class="stat-lbl">Running</div></div>
+    <div class="stat-card"><div class="stat-val" id="sWalkTime">0:00</div><div class="stat-lbl">Walking</div></div>
+  </div>
+
+  <!-- Complete banner -->
+  <div class="complete-banner" id="completeBanner">
+    <div class="complete-icon">🏁</div>
+    <div class="complete-title">Workout Complete!</div>
+    <div class="complete-sub" id="completeSub"></div>
+    <div class="complete-next" id="completeNext"></div>
+  </div>
+</div>
+
+<!-- Settings overlay -->
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-title">Audio Settings</div>
+      <button class="close-btn" id="closePanel">✕</button>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Voice Cues</div><div class="toggle-sub">Spoken phase announcements</div></div>
+      <label class="toggle"><input type="checkbox" id="voiceCues" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Countdown Beeps</div><div class="toggle-sub">3-2-1 before each switch</div></div>
+      <label class="toggle"><input type="checkbox" id="beepCues" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><div class="toggle-label">Switch Tones</div><div class="toggle-sub">Audio chime on phase change</div></div>
+      <label class="toggle"><input type="checkbox" id="toneCues" checked><span class="toggle-slider"></span></label>
+    </div>
+    <button class="btn-save" id="saveSettings">Save</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// TRAINING DATA  (research-backed: C25K / NHS / Mayo Clinic / Jeff Galloway)
+// Each level has named "weeks" each with a schedule array.
+// schedule entry: { phase, label, duration (seconds) }
+// Special phases: 'warmup-walk','cooldown-walk','run','walk','continuous'
+// ─────────────────────────────────────────────────────────────────────────────
+const LEVELS = [
+  {
+    id: 'foundation',
+    emoji: '🌱',
+    name: 'Foundation',
+    desc: 'Brand new to running. Start here if walking 30 min is already a challenge.',
+    source: 'Based on Mayo Clinic / NHS pre-C25K',
+    weeks: [
+      {
+        label: 'Week 1 – First Steps',
+        desc: '15 sec run / 45 sec walk × 20 min',
+        schedule: mkIntervals(15, 45, 20*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Week 2 – Building Base',
+        desc: '20 sec run / 40 sec walk × 20 min',
+        schedule: mkIntervals(20, 40, 20*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Week 3 – Gaining Rhythm',
+        desc: '25 sec run / 35 sec walk × 20 min',
+        schedule: mkIntervals(25, 35, 20*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Week 4 – Building Confidence',
+        desc: '30 sec run / 30 sec walk × 20 min',
+        schedule: mkIntervals(30, 30, 20*60, 'run', 'walk', 300, 300)
+      },
+    ]
+  },
+  {
+    id: 'beginner',
+    emoji: '🏃',
+    name: 'Beginner',
+    desc: 'Can walk briskly for 30 min. Classic Couch-to-5K weeks 1–5.',
+    source: 'Couch to 5K (NHS / C25K.com)',
+    weeks: [
+      {
+        label: 'C25K Week 1',
+        desc: '1 min run / 1.5 min walk × 8 rounds',
+        schedule: mkIntervals(60, 90, 8, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'C25K Week 2',
+        desc: '1.5 min run / 2 min walk × 6 rounds',
+        schedule: mkIntervals(90, 120, 6, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'C25K Week 3',
+        desc: '90s run, 90s walk, 3 min run, 3 min walk × 2 cycles',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:90},{phase:'walk',label:'Walk',dur:90},
+          {phase:'run',label:'Run',dur:180},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:90},{phase:'walk',label:'Walk',dur:90},
+          {phase:'run',label:'Run',dur:180},{phase:'walk',label:'Walk',dur:180},
+        ])
+      },
+      {
+        label: 'C25K Week 4',
+        desc: '3 min run, 90s walk, 5 min run, 2.5 min walk × 2',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:180},{phase:'walk',label:'Walk',dur:90},
+          {phase:'run',label:'Run',dur:300},{phase:'walk',label:'Walk',dur:150},
+          {phase:'run',label:'Run',dur:180},{phase:'walk',label:'Walk',dur:90},
+          {phase:'run',label:'Run',dur:300},{phase:'walk',label:'Walk',dur:150},
+        ])
+      },
+      {
+        label: 'C25K Week 5 – Day 1',
+        desc: '5 min run / 3 min walk × 3',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:300},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:300},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:300},
+        ])
+      },
+      {
+        label: 'C25K Week 5 – Day 2',
+        desc: '8 min run / 5 min walk × 2 — almost there!',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:480},{phase:'walk',label:'Walk',dur:300},
+          {phase:'run',label:'Run',dur:480},
+        ])
+      },
+    ]
+  },
+  {
+    id: 'intermediate',
+    emoji: '🔥',
+    name: 'Intermediate',
+    desc: 'Can run 8–10 min at a stretch. Building to 30 min continuous.',
+    source: 'C25K weeks 5–9 + Galloway method',
+    weeks: [
+      {
+        label: 'Week 1 – First 20-Min Run',
+        desc: '20 minutes continuous running — milestone day!',
+        schedule: mkCustom(300, 300, [{phase:'run',label:'Run',dur:1200}])
+      },
+      {
+        label: 'Week 2 – Run/Walk Intervals',
+        desc: '5 min run / 3 min walk / 8 min run / 3 min walk / 5 min run',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:300},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:480},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:300},
+        ])
+      },
+      {
+        label: 'Week 3 – 10/3/10',
+        desc: '10 min run / 3 min walk / 10 min run',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Run',dur:600},{phase:'walk',label:'Walk',dur:180},
+          {phase:'run',label:'Run',dur:600},
+        ])
+      },
+      {
+        label: 'Week 4 – 25-Min Continuous',
+        desc: '25 minutes running continuously',
+        schedule: mkCustom(300, 300, [{phase:'run',label:'Run',dur:1500}])
+      },
+      {
+        label: 'Week 5 – 28-Min Continuous',
+        desc: '28 minutes running continuously',
+        schedule: mkCustom(300, 300, [{phase:'run',label:'Run',dur:1680}])
+      },
+      {
+        label: 'Week 6 – 5K Ready! 30 Min',
+        desc: '30 minutes continuous — you can run a 5K!',
+        schedule: mkCustom(300, 300, [{phase:'run',label:'Run',dur:1800}])
+      },
+    ]
+  },
+  {
+    id: 'galloway',
+    emoji: '⚡',
+    name: 'Galloway Method',
+    desc: 'Run/walk/run strategy used by marathoners. Faster long-term and fewer injuries.',
+    source: 'Jeff Galloway run-walk-run method',
+    weeks: [
+      {
+        label: 'Level 1 – Easy Intro',
+        desc: '30 sec run / 30 sec walk × 20 min',
+        schedule: mkIntervals(30, 30, 20*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Level 2 – 1:1 Ratio',
+        desc: '1 min run / 1 min walk × 20 min',
+        schedule: mkIntervals(60, 60, 20*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Level 3 – 2:1 Ratio',
+        desc: '2 min run / 1 min walk × 24 min',
+        schedule: mkIntervals(120, 60, 24*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Level 4 – 3:1 Ratio',
+        desc: '3 min run / 1 min walk × 24 min',
+        schedule: mkIntervals(180, 60, 24*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Level 5 – 4:1 Ratio',
+        desc: '4 min run / 1 min walk × 25 min',
+        schedule: mkIntervals(240, 60, 25*60, 'run', 'walk', 300, 300)
+      },
+      {
+        label: 'Level 6 – 5:1 Ratio',
+        desc: '5 min run / 1 min walk × 30 min',
+        schedule: mkIntervals(300, 60, 30*60, 'run', 'walk', 300, 300)
+      },
+    ]
+  },
+  {
+    id: 'advanced',
+    emoji: '🏅',
+    name: 'Speed Builder',
+    desc: 'Can run 30+ min. Add speed intervals (VO₂max & lactate threshold work).',
+    source: 'RunnersConnect research-backed 5K workouts',
+    weeks: [
+      {
+        label: 'Fartlek – Easy Surges',
+        desc: '1 min fast / 2 min easy × 8 rounds in 30 min total',
+        schedule: mkCustom(300, 300, buildFartlek(60, 120, 8))
+      },
+      {
+        label: 'Tempo Intervals',
+        desc: '3 min at tempo / 90 sec easy walk × 5 rounds',
+        schedule: mkCustom(300, 300, buildFartlek(180, 90, 5))
+      },
+      {
+        label: '400m Style – Short Hard',
+        desc: '45 sec fast / 90 sec walk × 10 rounds',
+        schedule: mkCustom(300, 300, buildFartlek(45, 90, 10))
+      },
+      {
+        label: 'Pyramid Intervals',
+        desc: '1/2/3/2/1 min hard, 90 sec walk between each',
+        schedule: mkCustom(300, 300, [
+          {phase:'run',label:'Sprint',dur:60},{phase:'walk',label:'Recover',dur:90},
+          {phase:'run',label:'Sprint',dur:120},{phase:'walk',label:'Recover',dur:90},
+          {phase:'run',label:'Sprint',dur:180},{phase:'walk',label:'Recover',dur:90},
+          {phase:'run',label:'Sprint',dur:120},{phase:'walk',label:'Recover',dur:90},
+          {phase:'run',label:'Sprint',dur:60},
+        ])
+      },
+    ]
+  }
+];
+
+// ─── Schedule builders ────────────────────────────────────────────────────────
+function mkIntervals(runSec, walkSec, totalOrReps, rPhase, wPhase, warmup, cooldown, useReps) {
+  const s = [];
+  if (warmup) s.push({phase:'walk', label:'Warmup Walk', dur:warmup});
+  if (useReps) {
+    for (let i = 0; i < totalOrReps; i++) {
+      s.push({phase:'run', label:'Run', dur:runSec});
+      s.push({phase:'walk', label:'Walk', dur:walkSec});
+    }
+  } else {
+    // fill up to totalOrReps seconds
+    const cycleLen = runSec + walkSec;
+    const reps = Math.round(totalOrReps / cycleLen);
+    for (let i = 0; i < reps; i++) {
+      s.push({phase:'run', label:'Run', dur:runSec});
+      s.push({phase:'walk', label:'Walk', dur:walkSec});
+    }
+  }
+  if (cooldown) s.push({phase:'walk', label:'Cooldown Walk', dur:cooldown});
+  return s;
+}
+
+function mkCustom(warmup, cooldown, segs) {
+  const s = [];
+  if (warmup) s.push({phase:'walk', label:'Warmup Walk', dur:warmup});
+  segs.forEach(x => s.push({phase:x.phase, label:x.label, dur:x.dur}));
+  if (cooldown) s.push({phase:'walk', label:'Cooldown Walk', dur:cooldown});
+  return s;
+}
+
+function buildFartlek(runSec, walkSec, reps) {
+  const out = [];
+  for (let i = 0; i < reps; i++) {
+    out.push({phase:'run', label:'Fast', dur:runSec});
+    out.push({phase:'walk', label:'Easy', dur:walkSec});
+  }
+  return out;
+}
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let prefs = loadPrefs();
+let selLevel = 0, selWeek = 0;
+let schedule = [], schIdx = 0, secsLeft = 0;
+let timer = null, running = false;
+let totalSec = 0, runSec = 0, walkSec2 = 0;
+const CIRC = 2 * Math.PI * 95; // 596.9
+
+function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem('paceup2_prefs')) || {}; } catch(e) { return {}; }
+}
+function savePrefs() { localStorage.setItem('paceup2_prefs', JSON.stringify(prefs)); }
+
+// ─── Audio ────────────────────────────────────────────────────────────────────
+let audioCtx = null;
+function ac() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function tone(freq, dur, type='sine', vol=0.35) {
+  try {
+    const ctx = ac(), o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.setValueAtTime(freq, ctx.currentTime);
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+
+function chimeSwitch(phase) {
+  if (!prefs.tones) return;
+  if (phase === 'run') {
+    tone(880, .12, 'square', .3); setTimeout(() => tone(1047, .18, 'square', .3), 140);
+  } else {
+    tone(523, .12, 'sine', .28); setTimeout(() => tone(392, .18, 'sine', .28), 140);
+  }
+}
+
+function beepCountdown() { if (prefs.beeps) tone(660, .1, 'sine', .22); }
+
+function speak(txt) {
+  if (!prefs.voice) return;
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(txt);
+  u.rate = 1.05; u.pitch = 1.0;
+  window.speechSynthesis.speak(u);
+}
+
+// ─── Format ───────────────────────────────────────────────────────────────────
+function fmt(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function fmtShort(s) {
+  const m = Math.floor(s/60), ss = s%60;
+  if (m > 0 && ss > 0) return `${m}m ${ss}s`;
+  if (m > 0) return `${m} min`;
+  return `${ss}s`;
+}
+
+// ─── Level select render ──────────────────────────────────────────────────────
+function renderLevelGrid() {
+  const grid = document.getElementById('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach((lv, li) => {
+    const card = document.createElement('div');
+    card.className = 'level-card' + (li === selLevel ? ' selected' : '');
+    card.innerHTML = `
+      <div class="level-badge">${lv.emoji}</div>
+      <div class="level-info">
+        <div class="level-name">${lv.name}</div>
+        <div class="level-desc">${lv.desc}</div>
+        <div class="level-pills">
+          <span class="pill">${lv.weeks.length} sessions</span>
+          <span class="pill" style="font-size:.62rem;color:var(--muted)">${lv.source}</span>
+        </div>
+        <div id="weeks_${li}" class="week-rows" style="margin-top:10px;display:${li===selLevel?'flex':'none'};flex-direction:column;gap:5px;"></div>
+      </div>
+      <div class="check-mark">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>`;
+    card.addEventListener('click', () => selectLevel(li));
+    grid.appendChild(card);
+    if (li === selLevel) renderWeekRows(li);
+  });
+  document.getElementById('btnGoWorkout').disabled = false;
+}
+
+function renderWeekRows(li) {
+  const container = document.getElementById(`weeks_${li}`);
+  if (!container) return;
+  container.innerHTML = '';
+  LEVELS[li].weeks.forEach((wk, wi) => {
+    const row = document.createElement('div');
+    const isActive = (wi === selWeek);
+    row.className = 'week-row' + (isActive ? ' active-week' : '');
+    const done = prefs[`done_${li}_${wi}`];
+    row.innerHTML = `
+      <span class="week-num">W${wi+1}</span>
+      <span style="flex:1;padding:0 10px;color:var(--text2);font-size:.75rem">${wk.desc}</span>
+      ${done ? '<span class="week-tag done">✓ Done</span>' : (isActive ? '<span class="week-tag">Selected</span>' : '')}`;
+    row.addEventListener('click', e => { e.stopPropagation(); selectWeek(li, wi); });
+    container.appendChild(row);
+  });
+}
+
+function selectLevel(li) {
+  selLevel = li;
+  selWeek = 0;
+  renderLevelGrid();
+}
+
+function selectWeek(li, wi) {
+  selLevel = li; selWeek = wi;
+  renderLevelGrid();
+}
+
+// ─── Workout screen ───────────────────────────────────────────────────────────
+function goToWorkout() {
+  const lv = LEVELS[selLevel];
+  const wk = lv.weeks[selWeek];
+
+  document.getElementById('chipName').textContent = `${lv.emoji} ${lv.name}`;
+  document.getElementById('chipWeek').textContent = wk.label;
+
+  schedule  = wk.schedule;
+  schIdx    = 0;
+  secsLeft  = schedule[0]?.dur || 0;
+  totalSec  = 0; runSec = 0; walkSec2 = 0;
+  running   = false;
+  clearInterval(timer);
+
+  document.getElementById('startBtn').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start`;
+  document.getElementById('skipBtn').disabled = true;
+  document.getElementById('completeBanner').classList.remove('show');
+
+  document.getElementById('screenSelect').classList.remove('active');
+  document.getElementById('screenWorkout').classList.add('active');
+
+  updateUI();
+}
+
+function goToSelect() {
+  clearInterval(timer);
+  running = false;
+  document.getElementById('screenWorkout').classList.remove('active');
+  document.getElementById('screenSelect').classList.add('active');
+  renderLevelGrid();
+}
+
+// ─── Timer ────────────────────────────────────────────────────────────────────
+function tick() {
+  totalSec++;
+  const seg = schedule[schIdx];
+  if (seg.phase === 'run') runSec++; else walkSec2++;
+  secsLeft--;
+  if (secsLeft <= 3 && secsLeft > 0) beepCountdown();
+  if (secsLeft <= 0) advance();
+  else updateUI();
+}
+
+function advance() {
+  schIdx++;
+  if (schIdx >= schedule.length) { finish(); return; }
+  const seg = schedule[schIdx];
+  secsLeft = seg.dur;
+  chimeSwitch(seg.phase);
+  const mins = Math.round(seg.dur / 60);
+  speak(`${seg.label} for ${mins < 1 ? fmtShort(seg.dur) : (mins + ' minute' + (mins !== 1 ? 's' : ''))}`);
+  updateUI();
+}
+
+function updateUI() {
+  const seg = schedule[schIdx];
+  if (!seg) return;
+  document.body.className = seg.phase === 'run' ? 'p-run' : 'p-walk';
+
+  const progress = secsLeft / seg.dur;
+  document.getElementById('ringProg').style.strokeDashoffset = CIRC * (1 - progress);
+  document.getElementById('phaseTime').textContent = fmt(secsLeft);
+  document.getElementById('phaseName').textContent = seg.label.toUpperCase();
+
+  // Phase color
+  const c = seg.phase === 'run' ? 'var(--run)' : 'var(--walk)';
+  document.getElementById('phaseTime').style.color = c;
+  document.getElementById('phaseName').style.color = c;
+
+  // Interval bar
+  const done = schIdx;
+  document.getElementById('intFill').style.width = `${(done / schedule.length) * 100}%`;
+  document.getElementById('intFill').style.background = c;
+  document.getElementById('intLbl').textContent = `${done + 1} / ${schedule.length}`;
+
+  // Next up
+  const next = schedule[schIdx + 1];
+  const nd = document.getElementById('nextDot');
+  const nt = document.getElementById('nextTxt');
+  if (next) {
+    nd.style.background = next.phase === 'run' ? 'var(--run)' : 'var(--walk)';
+    nt.innerHTML = `Next: <strong>${next.label}</strong> · <strong>${fmtShort(next.dur)}</strong>`;
+  } else {
+    nd.style.background = 'var(--muted)';
+    nt.innerHTML = `<strong>Last segment — finish strong! 💪</strong>`;
+  }
+
+  // Stats
+  document.getElementById('sTotalTime').textContent = fmt(totalSec);
+  document.getElementById('sRunTime').textContent   = fmt(runSec);
+  document.getElementById('sWalkTime').textContent  = fmt(walkSec2);
+}
+
+function startPause() {
+  if (running) {
+    clearInterval(timer); running = false;
+    document.getElementById('startBtn').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume`;
+    speak('Paused');
+  } else {
+    ac().resume();
+    running = true;
+    timer = setInterval(tick, 1000);
+    document.getElementById('startBtn').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
+    document.getElementById('skipBtn').disabled = false;
+    if (schIdx === 0 && secsLeft === schedule[0]?.dur) {
+      const seg = schedule[0];
+      chimeSwitch(seg.phase);
+      speak(`${seg.label} for ${fmtShort(seg.dur)}`);
+    }
+    updateUI();
+  }
+}
+
+function skipPhase() { if (running) { beepCountdown(); advance(); } }
+
+function resetTimer() {
+  clearInterval(timer); running = false;
+  schIdx = 0; secsLeft = schedule[0]?.dur || 0;
+  totalSec = 0; runSec = 0; walkSec2 = 0;
+  document.getElementById('startBtn').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start`;
+  document.getElementById('skipBtn').disabled = true;
+  document.getElementById('completeBanner').classList.remove('show');
+  updateUI();
+}
+
+function finish() {
+  clearInterval(timer); running = false;
+  document.getElementById('startBtn').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start`;
+  document.getElementById('skipBtn').disabled = true;
+
+  tone(523, .2); setTimeout(() => tone(659, .2), 220); setTimeout(() => tone(784, .35), 440);
+  speak('Workout complete! Great job!');
+
+  // Mark done
+  prefs[`done_${selLevel}_${selWeek}`] = true; savePrefs();
+
+  // Next session suggestion
+  const lv = LEVELS[selLevel];
+  let nextMsg = '';
+  if (selWeek < lv.weeks.length - 1) {
+    nextMsg = `Next up: ${lv.weeks[selWeek + 1].label}`;
+  } else if (selLevel < LEVELS.length - 1) {
+    nextMsg = `Ready to level up to ${LEVELS[selLevel + 1].name}! 🚀`;
+  } else {
+    nextMsg = `You've completed all levels! You're a runner. 🏅`;
+  }
+
+  document.getElementById('completeBanner').classList.add('show');
+  document.getElementById('completeSub').textContent =
+    `${fmt(totalSec)} total · ${fmt(runSec)} running · ${fmt(walkSec2)} walking`;
+  document.getElementById('completeNext').textContent = nextMsg;
+
+  document.getElementById('intFill').style.width = '100%';
+  document.getElementById('intLbl').textContent = `${schedule.length} / ${schedule.length}`;
+  document.getElementById('ringProg').style.strokeDashoffset = 0;
+  document.getElementById('phaseTime').textContent = '0:00';
+  document.getElementById('phaseName').textContent = 'DONE!';
+  document.getElementById('sTotalTime').textContent = fmt(totalSec);
+  document.getElementById('sRunTime').textContent   = fmt(runSec);
+  document.getElementById('sWalkTime').textContent  = fmt(walkSec2);
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function applyPrefsToUI() {
+  document.getElementById('voiceCues').checked = prefs.voice !== false;
+  document.getElementById('beepCues').checked  = prefs.beeps !== false;
+  document.getElementById('toneCues').checked  = prefs.tones !== false;
+}
+
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  applyPrefsToUI();
+  document.getElementById('overlay').classList.add('open');
+});
+document.getElementById('closePanel').addEventListener('click', () => document.getElementById('overlay').classList.remove('open'));
+document.getElementById('overlay').addEventListener('click', e => { if (e.target===document.getElementById('overlay')) document.getElementById('overlay').classList.remove('open'); });
+document.getElementById('saveSettings').addEventListener('click', () => {
+  prefs.voice = document.getElementById('voiceCues').checked;
+  prefs.beeps = document.getElementById('beepCues').checked;
+  prefs.tones = document.getElementById('toneCues').checked;
+  savePrefs();
+  document.getElementById('overlay').classList.remove('open');
+  speak('Settings saved.');
+});
+
+// ─── Button wiring ────────────────────────────────────────────────────────────
+document.getElementById('btnGoWorkout').addEventListener('click', goToWorkout);
+document.getElementById('levelChip').addEventListener('click', goToSelect);
+document.getElementById('startBtn').addEventListener('click', startPause);
+document.getElementById('skipBtn').addEventListener('click', skipPhase);
+document.getElementById('resetBtn').addEventListener('click', resetTimer);
+
+// ─── Wake lock ────────────────────────────────────────────────────────────────
+let wakeLock = null;
+async function reqWakeLock() {
+  if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {} }
+}
+document.addEventListener('visibilitychange', async () => {
+  if (wakeLock && document.visibilityState === 'visible' && running) await reqWakeLock();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+if (prefs.voice === undefined) prefs.voice = true;
+if (prefs.beeps === undefined) prefs.beeps = true;
+if (prefs.tones === undefined) prefs.tones = true;
+applyPrefsToUI();
+renderLevelGrid();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
