@@ -526,6 +526,65 @@ const LEVELS = [
     ]
   },
   {
+    id: 'current',
+    emoji: '🎯',
+    name: 'Current Runner',
+    desc: 'Already running ~3.5 miles / 45 min. Build consistency, extend distance, and stop finishing wiped out.',
+    source: 'Galloway + 10% rule + conversational pace principles',
+    weeks: [
+      {
+        label: 'Week 1 – Dial It Back',
+        desc: '2 min run / 1 min walk × 15 rounds — 45 min total. Finish feeling you had more.',
+        schedule: mkIntervals(120, 60, 15, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 2 – Settle the Pace',
+        desc: '2 min run / 1 min walk × 15 rounds. Same as W1 — lock in conversational pace.',
+        schedule: mkIntervals(120, 60, 15, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 3 – Step Up to 3:1',
+        desc: '3 min run / 1 min walk × 11 rounds — ~44 min. Still easy effort.',
+        schedule: mkIntervals(180, 60, 11, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 4 – Extend the Run',
+        desc: '3 min run / 1 min walk × 12 rounds — ~48 min. First distance bump.',
+        schedule: mkIntervals(180, 60, 12, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 5 – Push to 4:1',
+        desc: '4 min run / 1 min walk × 9 rounds — ~45 min. Longer run blocks.',
+        schedule: mkIntervals(240, 60, 9, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 6 – Build the Distance',
+        desc: '4 min run / 1 min walk × 10 rounds — ~50 min. Approaching 4 miles.',
+        schedule: mkIntervals(240, 60, 10, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 7 – 5:1 Ratio',
+        desc: '5 min run / 1 min walk × 8 rounds — ~48 min. Fewer stops, longer strides.',
+        schedule: mkIntervals(300, 60, 8, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 8 – Near-Continuous',
+        desc: '8 min run / 1 min walk × 5 rounds — ~45 min. Almost there.',
+        schedule: mkIntervals(480, 60, 5, 'run', 'walk', 300, 300, true)
+      },
+      {
+        label: 'Week 9 – 30-Min Continuous',
+        desc: '30 min continuous run + 10 min easy walk. Same distance, no stops.',
+        schedule: mkCustom(300, 600, [{phase:'run', label:'Run', dur:1800}])
+      },
+      {
+        label: 'Week 10 – 5K Strong',
+        desc: '40 min continuous run. You\'ve outgrown this level. Head to Speed Builder!',
+        schedule: mkCustom(300, 300, [{phase:'run', label:'Run', dur:2400}])
+      },
+    ]
+  },
+  {
     id: 'advanced',
     emoji: '🏅',
     name: 'Speed Builder',
