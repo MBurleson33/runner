@@ -3,560 +3,400 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#0a0a0a"/>
+  <meta name="theme-color" content="#f7f7f5"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="PaceUp"/>
   <title>PaceUp</title>
   <link rel="manifest" href="manifest.json"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="images/144.jpg"/>
-  <link rel="shortcut icon" href="images/144.jpg"/>
-  <link rel="apple-touch-icon" sizes="180x180" href="images/180.jpg"/>
+  <link rel="icon" type="image/jpeg" href="images/144.jpg"/>
+  <link rel="apple-touch-icon" href="images/180.jpg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:    #0d1117;
-  --s1:    #161b24;
-  --s2:    #1d2330;
-  --s3:    #252d3d;
-  --bd:    #2a3347;
-  --run:   #d4ff4e;
-  --walk:  #4ec9ff;
-  --text:  #f0f0f0;
-  --t2:    #8a95a8;
-  --t3:    #445069;
-  --r:     16px;
-  --mono:  'DM Mono', monospace;
-  --sans:  'Inter', sans-serif;
+:root{
+  --bg:#f7f7f5;--bg2:#efefec;--line:#e0e0db;--line2:#d0d0ca;
+  --run:#1a1a1a;--walk:#4a7c59;--text:#1a1a1a;
+  --t2:#888880;--t3:#bbbbb5;--r:12px;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-tap-highlight-color:transparent;height:100%}
-body{
-  background: #0d1117;
-  color:var(--text);font-family:var(--sans);
-  min-height:100dvh;display:flex;flex-direction:column;align-items:center;
-  overscroll-behavior:none;
-  position:relative;
-}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100dvh;display:flex;flex-direction:column;align-items:center;overscroll-behavior:none;}
 
-/* Animated background canvas */
-#bgCanvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Everything above the canvas */
-header, .screen, .sheet-overlay {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── SCREENS ── */
-.screen{display:none;width:100%;max-width:430px;flex-direction:column;min-height:100dvh}
+.screen{display:none;width:100%;flex-direction:column;min-height:100dvh}
 .screen.active{display:flex}
 
-/* ══════════════════════════════════════════
-   SCREEN 1 — PLAN GRID
-══════════════════════════════════════════ */
-#sPlanGrid { padding: 0 0 24px; }
+/* ── S1 PLAN LIST ── */
+#sPlanGrid{padding-bottom:40px}
+.pg-header{display:flex;align-items:flex-end;justify-content:space-between;padding:56px 32px 28px;border-bottom:1px solid var(--line)}
+.logo{font-family:var(--sans);font-size:1.7rem;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1}
+.logo em{font-style:italic;font-weight:400;color:var(--t2)}
+.hdr-btn{background:none;border:none;color:var(--t2);cursor:pointer;padding:4px;display:flex;align-items:center;transition:color .15s}
+.hdr-btn:hover{color:var(--text)}
 
-.pg-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 26px 20px 20px;
-}
-.logo { font-family: var(--mono); font-size: 1rem; color: var(--run); letter-spacing: -.02em; }
-.logo em { color: var(--t3); font-style: normal; }
-.hdr-btn {
-  background: var(--s2); border: 1px solid var(--bd); border-radius: 10px;
-  color: var(--t2); width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
+/* Last run banner */
+.last-run-bar{display:none;align-items:center;gap:16px;padding:14px 32px;background:var(--bg2);border-bottom:1px solid var(--line)}
+.last-run-bar.show{display:flex}
+.lr-eye{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--t2);font-weight:600;margin-bottom:3px}
+.lr-val{font-size:.88rem;font-weight:600}
+.lr-stats{display:flex;gap:20px;flex:1}
+.lr-stat{display:flex;flex-direction:column}
 
-/* Resume pill */
-.resume-pill {
-  display: none; align-items: center; gap: 10px;
-  margin: 0 16px 16px;
-  background: linear-gradient(135deg, rgba(212,255,78,.08) 0%, rgba(78,201,255,.05) 100%);
-  border: 1px solid rgba(212,255,78,.35);
-  border-radius: 14px; padding: 14px 16px; cursor: pointer;
-  transition: background .15s;
-  box-shadow: 0 0 20px rgba(212,255,78,.06);
-}
-.resume-pill:hover { background: linear-gradient(135deg, rgba(212,255,78,.12) 0%, rgba(78,201,255,.08) 100%); }
-.resume-pill.show { display: flex; }
-.rp-left { flex: 1; min-width: 0; }
-.rp-eye { font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; color: var(--run); font-weight: 700; margin-bottom: 4px; }
-.rp-title { font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rp-sub { font-size: .72rem; color: var(--t2); margin-top: 2px; }
-.rp-arrow { color: var(--run); flex-shrink: 0; }
-.rp-dismiss {
-  background: none; border: none; color: var(--t3); cursor: pointer;
-  font-size: .8rem; padding: 4px 6px; flex-shrink: 0;
-}
+/* Resume strip */
+.resume-strip{display:none;align-items:center;gap:0;margin:0;padding:18px 32px;background:var(--text);cursor:pointer;transition:opacity .15s}
+.resume-strip:hover{opacity:.9}
+.resume-strip.show{display:flex}
+.rs-left{flex:1}
+.rs-eye{font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.5);margin-bottom:4px;font-weight:600}
+.rs-title{font-size:.9rem;font-weight:700;color:#fff}
+.rs-sub{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px}
+.rs-arrow{color:rgba(255,255,255,.4)}
+.rs-dismiss{background:none;border:none;color:rgba(255,255,255,.35);cursor:pointer;font-size:.85rem;padding:4px 0 4px 16px}
 
-/* Plan grid */
-.grid-label {
-  padding: 0 20px 10px;
-  font-size: .62rem; text-transform: uppercase; letter-spacing: .13em; color: var(--t3); font-weight: 600;
-}
-.plan-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; padding: 0 16px;
-}
-.plan-tile {
-  background: linear-gradient(145deg, var(--s1) 0%, var(--s2) 100%);
-  border: 1px solid var(--bd); border-radius: var(--r);
-  padding: 20px 16px 18px; cursor: pointer;
-  display: flex; flex-direction: column; gap: 0;
-  transition: border-color .2s, background .2s, transform .12s, box-shadow .2s;
-  position: relative; overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 12px rgba(0,0,0,.3);
-}
-.plan-tile:active { transform: scale(.97); }
-.plan-tile:hover { border-color: var(--t3); box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-.plan-tile.pt-selected { border-color: var(--run); background: rgba(212,255,78,.04); }
+.section-eyebrow{padding:32px 32px 14px;font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);font-weight:600}
+.plan-rows{display:flex;flex-direction:column}
+.plan-row{display:flex;align-items:center;gap:18px;padding:22px 32px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.plan-row:first-child{border-top:1px solid var(--line)}
+.plan-row:hover{background:var(--bg2)}
+.plan-row:active{background:var(--line)}
+.pr-emoji{font-size:1.5rem;flex-shrink:0;width:34px;text-align:center}
+.pr-body{flex:1;min-width:0}
+.pr-name{font-size:1.1rem;font-weight:700;letter-spacing:-.02em;margin-bottom:3px}
+.pr-meta{font-size:.8rem;color:var(--t2)}
+.pr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.pr-pips{display:flex;gap:3px}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--line2)}
+.pip.done{background:var(--text)}
+.pip.cur{background:var(--t3)}
+.pr-arrow{color:var(--t3)}
 
-/* Colored top accent bar */
-.plan-tile::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: var(--accent, var(--bd));
-  border-radius: var(--r) var(--r) 0 0;
-}
+/* Home stats */
+.home-stats{padding:0 32px 48px;flex:1;display:flex;flex-direction:column}
+.hs-divider{height:1px;background:var(--line);margin:32px 0 28px}
+.hs-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);font-weight:600;margin-bottom:20px}
+.hs-numbers{display:grid;grid-template-columns:1fr 1fr;gap:28px 24px;margin-bottom:36px}
+.hs-stat{display:flex;flex-direction:column;gap:4px}
+.hs-val{font-family:var(--mono);font-size:2rem;font-weight:500;letter-spacing:-.03em;color:var(--text);line-height:1}
+.hs-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t2);font-weight:500}
 
-.pt-emoji { font-size: 1.6rem; margin-bottom: 10px; line-height: 1; }
-.pt-name { font-size: .95rem; font-weight: 700; margin-bottom: 4px; line-height: 1.2; }
-.pt-meta { font-size: .72rem; color: var(--t2); line-height: 1.5; margin-top: 6px; }
+/* Streak */
+.streak-row{display:flex;align-items:baseline;gap:10px;margin-bottom:28px}
+.streak-num{font-family:var(--mono);font-size:2.8rem;font-weight:500;letter-spacing:-.04em;color:var(--text);line-height:1}
+.streak-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t2);font-weight:500}
+.streak-fire{font-size:1.4rem;margin-left:4px}
 
-/* Progress bar on tile */
-.pt-progress {
-  margin-top: auto; padding-top: 14px;
-  display: flex; align-items: center; gap: 7px;
-}
-.pt-prog-track { flex: 1; height: 3px; background: var(--s3); border-radius: 99px; overflow: hidden; }
-.pt-prog-fill { height: 100%; border-radius: 99px; background: var(--accent, var(--bd)); }
-.pt-prog-label { font-family: var(--mono); font-size: .58rem; color: var(--t3); white-space: nowrap; }
+.hs-quote{margin-top:auto;padding-top:24px;border-top:1px solid var(--line);font-size:.95rem;font-style:italic;font-weight:400;color:var(--t2);line-height:1.55}
+.hs-quote cite{display:block;margin-top:8px;font-style:normal;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t3)}
 
-/* ══════════════════════════════════════════
-   SCREEN 2 — SESSION PICKER
-══════════════════════════════════════════ */
-#sSessionPick { padding: 0 0 100px; overflow-y: auto; }
+/* History screen */
+#sHistory{overflow-y:auto;padding-bottom:40px}
+.hist-header{display:flex;align-items:center;justify-content:space-between;padding:24px 32px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:10}
+.hist-title{font-size:1.4rem;font-weight:900;letter-spacing:-.04em}
+.hist-rows{display:flex;flex-direction:column}
+.hist-row{display:flex;align-items:flex-start;gap:16px;padding:18px 32px;border-bottom:1px solid var(--line)}
+.hist-date{font-family:var(--mono);font-size:.7rem;color:var(--t3);flex-shrink:0;padding-top:3px;width:56px}
+.hist-body{flex:1}
+.hist-name{font-size:.9rem;font-weight:700;margin-bottom:4px}
+.hist-meta{font-size:.75rem;color:var(--t2);display:flex;gap:12px;flex-wrap:wrap}
+.hist-meta span{display:flex;align-items:center;gap:4px}
+.hist-empty{padding:48px 32px;text-align:center;color:var(--t2);font-size:.88rem;line-height:1.6}
 
-.sp-header {
-  position: sticky; top: 0; z-index: 10;
-  background: var(--bg); padding: 20px 16px 0;
-  display: flex; flex-direction: column; gap: 14px;
-}
-.sp-back {
-  display: flex; align-items: center; gap: 6px;
-  background: none; border: none; color: var(--t2); cursor: pointer;
-  font-family: var(--sans); font-size: .82rem; padding: 0; align-self: flex-start;
-}
-.sp-back:hover { color: var(--text); }
+/* ── S2 SESSION LIST ── */
+#sSessionPick{overflow-y:auto;padding-bottom:100px}
+.sp-header{position:sticky;top:0;z-index:10;background:var(--bg)}
+.sp-topbar{display:flex;align-items:center;gap:8px;padding:20px 32px 0}
+.sp-back{background:none;border:none;color:var(--t2);cursor:pointer;font-family:var(--sans);font-size:.82rem;padding:0;display:flex;align-items:center;gap:4px;transition:color .15s}
+.sp-back:hover{color:var(--text)}
+.sp-plan-hero{padding:24px 32px;border-bottom:1px solid var(--line)}
+.sp-plan-name{font-size:2.2rem;font-weight:900;letter-spacing:-.05em;line-height:1.05;margin-bottom:8px}
+.sp-plan-desc{font-size:.88rem;color:var(--t2);line-height:1.55}
+.sp-source{font-size:.68rem;color:var(--t3);margin-top:8px;text-transform:uppercase;letter-spacing:.08em}
+.sess-eyebrow{padding:28px 32px 12px;font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);font-weight:600}
+.session-rows{display:flex;flex-direction:column}
+.sess-row{display:flex;align-items:flex-start;gap:18px;padding:20px 32px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .1s;-webkit-tap-highlight-color:transparent;position:relative}
+.sess-row:first-child{border-top:1px solid var(--line)}
+.sess-row:hover{background:var(--bg2)}
+.sess-row:active{background:var(--line)}
+.sess-row.sr-selected{background:var(--bg2)}
+.sess-row.sr-selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--text)}
+.sr-num{font-family:var(--mono);font-size:.78rem;color:var(--t3);width:24px;flex-shrink:0;padding-top:3px}
+.sr-body{flex:1;min-width:0}
+.sr-name{font-size:1rem;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.sr-desc{font-size:.82rem;color:var(--t2);line-height:1.5;margin-bottom:10px}
+.sr-pills{display:flex;flex-wrap:wrap;gap:4px}
+.sr-pill{font-family:var(--mono);font-size:.6rem;padding:2px 7px;border-radius:3px;border:1px solid var(--line2);color:var(--t2);background:var(--bg)}
+.sr-pill.run-p{border-color:var(--text);color:var(--text);background:var(--bg)}
+.sr-pill.walk-p{border-color:var(--walk);color:var(--walk);background:var(--bg)}
+.sr-right{flex-shrink:0;padding-top:2px}
+.sr-badge{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.srb-done{color:var(--t3)}
+.srb-next{color:var(--text)}
+.sp-start-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;padding:16px 32px 40px;background:linear-gradient(to top,var(--bg) 75%,transparent)}
+.btn-start{width:100%;background:var(--text);color:#fff;border:none;border-radius:4px;padding:20px;font-family:var(--sans);font-size:1.05rem;font-weight:800;letter-spacing:-.01em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .1s}
+.btn-start:hover{opacity:.88}
+.btn-start:active{transform:scale(.99)}
 
-.sp-plan-info {
-  display: flex; align-items: center; gap: 14px;
-  background: linear-gradient(135deg, var(--s1), var(--s2));
-  border: 1px solid var(--bd); border-radius: var(--r);
-  padding: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.25);
-}
-.sp-emoji { font-size: 2rem; flex-shrink: 0; }
-.sp-text { flex: 1; }
-.sp-plan-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 3px; }
-.sp-plan-desc { font-size: .75rem; color: var(--t2); line-height: 1.4; }
-.sp-source { font-size: .65rem; color: var(--t3); margin-top: 5px; }
+/* ── S3 WORKOUT ── */
+#sWorkout{padding:0;position:relative}
+.wo-topbar{display:flex;align-items:center;justify-content:space-between;padding:24px 32px 0}
+.wo-back{background:none;border:none;color:var(--t2);cursor:pointer;font-family:var(--sans);font-size:.82rem;padding:0;display:flex;align-items:center;gap:4px}
+.wo-back:hover{color:var(--text)}
+.wo-sess-name{font-family:var(--mono);font-size:.65rem;color:var(--t3);text-align:right;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.sp-sessions-label {
-  padding: 20px 16px 8px;
-  font-size: .62rem; text-transform: uppercase; letter-spacing: .13em; color: var(--t3); font-weight: 600;
-}
+/* Difficulty nudge */
+.diff-nudge{display:none;align-items:center;justify-content:space-between;padding:10px 32px;background:var(--bg2);border-bottom:1px solid var(--line)}
+.diff-nudge.show{display:flex}
+.diff-lbl{font-size:.72rem;color:var(--t2)}
+.diff-btns{display:flex;gap:8px}
+.diff-btn{background:none;border:1px solid var(--line2);border-radius:3px;padding:4px 12px;font-family:var(--sans);font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text);transition:background .1s}
+.diff-btn:hover{background:var(--line)}
 
-/* Session cards — big tappable */
-.session-cards { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }
+/* Pace zone */
+.pace-zone{display:none;align-items:center;gap:8px;padding:8px 32px}
+.pace-zone.show{display:flex}
+.pz-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pz-dot.fast{background:#c0392b}
+.pz-dot.on{background:var(--walk)}
+.pz-dot.slow{background:#f0a500}
+.pz-text{font-size:.72rem;color:var(--t2)}
 
-.sess-card {
-  background: linear-gradient(145deg, var(--s1) 0%, var(--s2) 100%);
-  border: 1px solid var(--bd); border-radius: var(--r);
-  padding: 16px; cursor: pointer; transition: border-color .15s, background .12s, transform .1s, box-shadow .15s;
-  display: flex; align-items: flex-start; gap: 14px;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 8px rgba(0,0,0,.25);
-}
-.sess-card:active { transform: scale(.98); }
-.sess-card:hover { border-color: var(--t3); box-shadow: 0 4px 16px rgba(0,0,0,.35); }
-.sess-card.sc-selected { border-color: var(--run); background: rgba(212,255,78,.05); box-shadow: 0 0 16px rgba(212,255,78,.08); }
-.sess-card.sc-done { opacity: .6; }
+.phase-hero{padding:28px 32px 16px;display:flex;flex-direction:column;gap:6px}
+.ph-eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;font-weight:600;color:var(--t2);transition:color .3s}
+.ph-phase{font-size:2.6rem;font-weight:900;letter-spacing:-.05em;line-height:1;transition:color .3s;color:var(--text)}
+.ph-timer{font-family:var(--mono);font-size:clamp(4.5rem,18vw,7rem);font-weight:500;letter-spacing:-.04em;line-height:1;transition:color .3s;color:var(--text);margin-top:6px}
+.ph-dur{font-size:.82rem;color:var(--t2);margin-top:4px}
 
-.sc-num {
-  width: 32px; height: 32px; border-radius: 10px;
-  background: var(--s2); border: 1px solid var(--bd);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono); font-size: .72rem; color: var(--t2); flex-shrink: 0;
-}
-.sess-card.sc-selected .sc-num { background: rgba(212,255,78,.15); border-color: var(--run); color: var(--run); }
-.sess-card.sc-done .sc-num { background: var(--s2); }
+body.pw-run  .ph-eyebrow,.ph-phase,.ph-timer{color:var(--text)}
+body.pw-walk .ph-eyebrow{color:var(--walk)}
+body.pw-walk .ph-phase{color:var(--walk)}
+body.pw-walk .ph-timer{color:var(--walk)}
+body.pw-ready .ph-timer{color:var(--t3)}
 
-.sc-body { flex: 1; min-width: 0; }
-.sc-name { font-size: .9rem; font-weight: 600; margin-bottom: 4px; }
-.sc-desc { font-size: .74rem; color: var(--t2); line-height: 1.5; margin-bottom: 8px; }
+.seg-strip{display:flex;gap:2px;padding:0 32px;margin-bottom:6px}
+.ss-dot{height:3px;flex:1;border-radius:99px;transition:background .25s}
+.ss-done{background:var(--text);opacity:.25}
+.ss-active-run{background:var(--text)}
+.ss-active-walk{background:var(--walk)}
+.ss-ahead-run,.ss-ahead-walk{background:var(--line2)}
+.seg-label{display:flex;justify-content:space-between;padding:6px 32px 0;font-family:var(--mono);font-size:.68rem;color:var(--t3)}
 
-/* Interval pills inside session card */
-.sc-pills { display: flex; flex-wrap: wrap; gap: 5px; }
-.sc-pill {
-  font-family: var(--mono); font-size: .62rem; padding: 3px 8px; border-radius: 99px;
-  border: 1px solid var(--bd); color: var(--t2); background: var(--s2);
-}
-.sc-pill.run-pill { border-color: rgba(212,255,78,.25); color: var(--run); background: rgba(212,255,78,.07); }
-.sc-pill.walk-pill { border-color: rgba(78,201,255,.25); color: var(--walk); background: rgba(78,201,255,.07); }
-.sc-pill.time-pill { border-color: var(--bd); color: var(--t3); }
+.wo-divider{height:1px;background:var(--line);margin:20px 32px}
 
-.sc-badge {
-  flex-shrink: 0; font-family: var(--mono); font-size: .62rem;
-  padding: 3px 8px; border-radius: 99px; align-self: flex-start;
-}
-.scb-done { background: rgba(255,255,255,.05); color: var(--t3); }
-.scb-next { background: rgba(212,255,78,.12); color: var(--run); border: 1px solid rgba(212,255,78,.2); }
+.next-up{padding:0 32px;display:flex;align-items:baseline;gap:10px}
+.nu-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--t3);font-weight:600;white-space:nowrap}
+.nu-val{font-size:1rem;font-weight:600;color:var(--text)}
+.nu-dur{font-size:.9rem;color:var(--t2)}
 
-/* Sticky start bar */
-.sp-start-bar {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 430px;
-  padding: 12px 16px 28px;
-  background: linear-gradient(to top, var(--bg) 70%, transparent);
-}
-.btn-start {
-  width: 100%; background: var(--run); color: #000; border: none; border-radius: var(--r);
-  padding: 18px; font-family: var(--sans); font-size: 1rem; font-weight: 800;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: opacity .15s, transform .1s;
-}
-.btn-start:hover { opacity: .92; }
-.btn-start:active { transform: scale(.98); }
-.btn-start:disabled { opacity: .3; cursor: not-allowed; }
+.ctrl-wrap{padding:20px 32px 0;display:flex;flex-direction:column;gap:12px}
+.ctrl-row{display:grid;grid-template-columns:60px 1fr 60px;gap:12px}
+.c-main{background:var(--text);color:#fff;border:none;border-radius:4px;padding:22px;font-family:var(--sans);font-size:1.05rem;font-weight:800;letter-spacing:-.01em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .3s,opacity .15s,transform .1s}
+.c-main:active{transform:scale(.98)}
+.c-main.walk-bg{background:var(--walk)}
+.c-side{background:var(--bg2);color:var(--t2);border:1px solid var(--line);border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background .12s,color .12s}
+.c-side:hover{background:var(--line);color:var(--text)}
+.c-side:disabled{opacity:.3;cursor:not-allowed}
+.c-side-lbl{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 
-/* ══════════════════════════════════════════
-   SCREEN 3 — WORKOUT
-══════════════════════════════════════════ */
-#sWorkout { padding: 0; position: relative; }
+.stats-inline{display:grid;grid-template-columns:repeat(3,1fr);padding:16px 32px 0;gap:0}
+.stat-i{display:flex;flex-direction:column;gap:2px}
+.stat-i+.stat-i{border-left:1px solid var(--line);padding-left:16px}
+.stat-v{font-family:var(--mono);font-size:1.3rem;font-weight:500;color:var(--text)}
+.stat-l{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-top:3px}
 
-.wo-topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 16px 0;
-}
-.wo-back {
-  display: flex; align-items: center; gap: 5px;
-  background: none; border: none; color: var(--t2); cursor: pointer;
-  font-family: var(--sans); font-size: .8rem; padding: 0;
-}
-.wo-back:hover { color: var(--text); }
-.wo-id { font-family: var(--mono); font-size: .65rem; color: var(--t3); }
+/* GPS */
+.gps-status{font-size:1rem!important;display:flex;align-items:center;gap:6px}
+.gps-dot{width:10px;height:10px;border-radius:50%;background:var(--t3);flex-shrink:0}
+.gps-dot.searching{background:#f0a500;animation:gpsPulse 1.2s ease-in-out infinite}
+.gps-dot.locked{background:var(--walk)}
+.gps-dot.error{background:#c0392b}
+@keyframes gpsPulse{0%,100%{opacity:1}50%{opacity:.35}}
+.gps-lbl{font-size:.72rem;font-family:var(--sans);color:var(--t2)}
 
-/* Phase card */
-.phase-card {
-  margin: 14px 16px 0;
-  border-radius: 20px; padding: 22px 22px 20px;
-  display: flex; flex-direction: column; gap: 6px;
-  transition: background .35s, border-color .35s;
-  border: 1px solid transparent;
-}
-.phase-card.pc-ready { background: linear-gradient(145deg, var(--s1), var(--s2)); border-color: var(--bd); }
-.phase-card.pc-run   { background: linear-gradient(145deg, rgba(212,255,78,.1), rgba(212,255,78,.04)); border-color: rgba(212,255,78,.3); box-shadow: 0 0 30px rgba(212,255,78,.07); }
-.phase-card.pc-walk  { background: linear-gradient(145deg, rgba(78,201,255,.1), rgba(78,201,255,.04)); border-color: rgba(78,201,255,.3); box-shadow: 0 0 30px rgba(78,201,255,.07); }
+/* Finish */
+.fin-overlay{display:none;position:absolute;inset:0;background:var(--bg);z-index:20;flex-direction:column;padding:64px 32px 48px;overflow-y:auto}
+.fin-overlay.show{display:flex}
+.fin-eyebrow{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);font-weight:600;margin-bottom:12px}
+.fin-title{font-size:clamp(3rem,14vw,4.5rem);font-weight:900;letter-spacing:-.05em;line-height:1;margin-bottom:8px}
+.fin-sub{font-size:.85rem;color:var(--t2);line-height:1.7}
+.fin-divider{height:1px;background:var(--line);margin:28px 0}
+.fin-next-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--t2);font-weight:600;margin-bottom:8px}
+.fin-next-name{font-size:1rem;font-weight:700;margin-bottom:28px}
+.fin-spacer{flex:1;min-height:24px}
+.fin-btns{display:flex;flex-direction:column;gap:10px}
+.btn-fin-p{background:var(--text);color:#fff;border:none;border-radius:4px;padding:17px;font-family:var(--sans);font-size:.95rem;font-weight:800;letter-spacing:-.01em;cursor:pointer;transition:opacity .15s}
+.btn-fin-p:hover{opacity:.88}
+.btn-fin-s{background:none;color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:15px;font-family:var(--sans);font-size:.88rem;cursor:pointer;transition:background .12s}
+.btn-fin-s:hover{background:var(--bg2)}
 
-.pc-top { display: flex; align-items: center; justify-content: space-between; }
-.pc-phase-name {
-  font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .13em;
-  transition: color .3s;
-}
-.phase-card.pc-ready .pc-phase-name { color: var(--t2); }
-.phase-card.pc-run   .pc-phase-name { color: var(--run); }
-.phase-card.pc-walk  .pc-phase-name { color: var(--walk); }
+/* Settings sheet */
+.sheet-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;align-items:flex-end;justify-content:center}
+.sheet-overlay.open{display:flex}
+.sheet{width:100%;background:var(--bg);border-top:1px solid var(--line);border-radius:20px 20px 0 0;padding:28px 32px 44px;display:flex;flex-direction:column;gap:24px;animation:sheetUp .22s ease}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh-hdr{display:flex;align-items:center;justify-content:space-between}
+.sh-title{font-size:1rem;font-weight:800;letter-spacing:-.02em}
+.sh-close{background:var(--bg2);border:1px solid var(--line);border-radius:4px;color:var(--t2);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem}
+.tog-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tog-info .tog-lbl{font-size:.88rem;font-weight:600}
+.tog-info .tog-sub{font-size:.72rem;color:var(--t2);margin-top:2px}
+.tog{position:relative;width:46px;height:26px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;inset:0;background:var(--line2);border-radius:99px;cursor:pointer;transition:background .2s}
+.tog-sl::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.tog input:checked+.tog-sl{background:var(--text)}
+.tog input:checked+.tog-sl::before{transform:translateX(20px)}
+.sh-save{background:var(--text);color:#fff;border:none;border-radius:4px;padding:16px;font-family:var(--sans);font-size:.95rem;font-weight:800;letter-spacing:-.01em;cursor:pointer;transition:opacity .15s}
+.sh-save:hover{opacity:.88}
 
-.pc-phase-icon { font-size: 1.1rem; }
-
-/* BIG timer */
-.pc-timer {
-  font-family: var(--mono); font-size: 5rem; font-weight: 500;
-  line-height: 1; letter-spacing: -.03em;
-  transition: color .3s;
+/* Landscape */
+@media(orientation:landscape) and (min-width:600px){
+  .screen{flex-direction:row;flex-wrap:wrap}
+  #sPlanGrid{flex-direction:row;flex-wrap:wrap}
+  .pg-header{width:100%;flex:0 0 100%}
+  .resume-strip,.last-run-bar{width:100%;flex:0 0 100%}
+  .section-eyebrow{width:100%;flex:0 0 100%}
+  .plan-rows{flex:1;border-right:1px solid var(--line)}
+  .home-stats{flex:1;min-width:280px}
+  #sWorkout{flex-direction:column}
+  .phase-hero{padding:24px 32px 12px}
+  .ph-timer{font-size:clamp(3.5rem,10vw,5rem)}
 }
-.phase-card.pc-ready .pc-timer { color: var(--t3); }
-.phase-card.pc-run   .pc-timer { color: var(--run); }
-.phase-card.pc-walk  .pc-timer { color: var(--walk); }
-
-.pc-duration-label {
-  font-size: .72rem; color: var(--t2); margin-top: 2px;
-}
-
-/* Segment strip */
-.seg-strip {
-  margin: 12px 16px 0;
-  display: flex; gap: 3px; align-items: center; flex-wrap: nowrap; overflow: hidden;
-}
-.ss-dot {
-  height: 5px; flex: 1; border-radius: 99px; min-width: 4px;
-  transition: background .25s;
-}
-.ss-dot.ss-run-done   { background: var(--t3); }
-.ss-dot.ss-walk-done  { background: var(--t3); }
-.ss-dot.ss-run-active { background: var(--run); }
-.ss-dot.ss-walk-active{ background: var(--walk); }
-.ss-dot.ss-run-ahead  { background: rgba(212,255,78,.2); }
-.ss-dot.ss-walk-ahead { background: rgba(78,201,255,.15); }
-
-/* Progress label */
-.prog-label {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 16px 0;
-  font-family: var(--mono); font-size: .65rem; color: var(--t3);
-}
-
-/* Next up */
-.next-card {
-  margin: 10px 16px 0;
-  background: linear-gradient(135deg, var(--s1), var(--s2));
-  border: 1px solid var(--bd); border-radius: 12px;
-  padding: 12px 14px; display: flex; align-items: center; gap: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
-}
-.nc-icon { font-size: 1rem; flex-shrink: 0; }
-.nc-text { font-size: .78rem; color: var(--t2); }
-.nc-text strong { color: var(--text); font-weight: 600; }
-
-/* Controls */
-.ctrl-wrap { padding: 12px 16px 0; display: flex; flex-direction: column; gap: 10px; }
-.ctrl-row { display: grid; grid-template-columns: 58px 1fr 58px; gap: 10px; }
-
-.c-main {
-  background: var(--run); color: #000; border: none; border-radius: var(--r);
-  padding: 18px; font-family: var(--sans); font-size: 1rem; font-weight: 800;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: background .3s, transform .1s;
-}
-.c-main:active { transform: scale(.97); }
-.c-main.walk-bg { background: var(--walk); }
-
-.c-side {
-  background: var(--s2); color: var(--t2); border: 1px solid var(--bd);
-  border-radius: var(--r); cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  transition: background .12s, color .12s;
-}
-.c-side:hover { background: var(--s3); color: var(--text); }
-.c-side:disabled { opacity: .28; cursor: not-allowed; }
-.c-side-lbl { font-size: .6rem; font-family: var(--sans); font-weight: 500; }
-
-/* Stats */
-.stats-row {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 8px; padding: 10px 16px 0;
-}
-.stat-b {
-  background: linear-gradient(145deg, var(--s1), var(--s2));
-  border: 1px solid var(--bd); border-radius: 12px;
-  padding: 12px 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
-}
-.stat-v { font-family: var(--mono); font-size: 1.08rem; font-weight: 500; }
-.stat-l { font-size: .6rem; color: var(--t3); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
-
-/* Finish overlay */
-.fin-overlay {
-  display: none; position: absolute; inset: 0;
-  background: var(--bg); z-index: 20;
-  flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; padding: 32px; text-align: center;
-}
-.fin-overlay.show { display: flex; }
-.fin-icon { font-size: 4rem; line-height: 1; }
-.fin-title { font-size: 1.5rem; font-weight: 800; }
-.fin-stats { font-size: .85rem; color: var(--t2); line-height: 1.7; }
-.fin-next-box {
-  background: rgba(212,255,78,.08); border: 1px solid rgba(212,255,78,.2);
-  border-radius: 12px; padding: 12px 18px; width: 100%;
-}
-.fin-next-eye { font-size: .6rem; text-transform: uppercase; letter-spacing: .12em; color: var(--run); font-weight: 700; margin-bottom: 4px; }
-.fin-next-name { font-size: .88rem; font-weight: 600; }
-.fin-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
-.btn-fin-p {
-  background: var(--run); color: #000; border: none; border-radius: var(--r);
-  padding: 16px; font-family: var(--sans); font-size: .95rem; font-weight: 800; cursor: pointer;
-}
-.btn-fin-s {
-  background: var(--s2); color: var(--t2); border: 1px solid var(--bd);
-  border-radius: var(--r); padding: 14px; font-family: var(--sans); font-size: .88rem; cursor: pointer;
-}
-
-/* ── SETTINGS SHEET ── */
-.sheet-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.82);
-  z-index: 300; align-items: flex-end; justify-content: center;
-}
-.sheet-overlay.open { display: flex; }
-.sheet {
-  width: 100%; max-width: 430px;
-  background: linear-gradient(180deg, var(--s2) 0%, var(--s1) 100%);
-  border: 1px solid var(--bd); border-bottom: none;
-  border-radius: 22px 22px 0 0; padding: 24px 20px 40px;
-  display: flex; flex-direction: column; gap: 20px;
-  animation: sheetUp .22s ease;
-}
-@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-.sh-hdr { display: flex; align-items: center; justify-content: space-between; }
-.sh-title { font-size: 1rem; font-weight: 700; }
-.sh-close {
-  background: var(--s2); border: 1px solid var(--bd); border-radius: 8px;
-  color: var(--t2); width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
-.tog-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.tog-info .tog-lbl { font-size: .88rem; font-weight: 500; }
-.tog-info .tog-sub { font-size: .72rem; color: var(--t2); margin-top: 2px; }
-.tog { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
-.tog input { opacity: 0; width: 0; height: 0; }
-.tog-sl {
-  position: absolute; inset: 0; background: var(--s3); border: 1px solid var(--bd);
-  border-radius: 99px; cursor: pointer; transition: background .2s;
-}
-.tog-sl::before {
-  content: ''; position: absolute; width: 20px; height: 20px;
-  left: 2px; top: 2px; background: var(--t2); border-radius: 50%;
-  transition: transform .2s, background .2s;
-}
-.tog input:checked+.tog-sl { background: var(--run); border-color: var(--run); }
-.tog input:checked+.tog-sl::before { transform: translateX(20px); background: #000; }
-.sh-save {
-  background: var(--run); color: #000; border: none; border-radius: var(--r);
-  padding: 15px; font-family: var(--sans); font-size: .95rem; font-weight: 700; cursor: pointer;
-}
-
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body>
-<canvas id="bgCanvas"></canvas>
+<body class="pw-ready">
 
-<!-- ══════════ SCREEN 1: PLAN GRID ══════════ -->
+<!-- S1: PLAN LIST -->
 <div class="screen active" id="sPlanGrid">
   <div class="pg-header">
     <div class="logo">Pace<em>Up</em></div>
-    <button class="hdr-btn" id="settingsBtn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <div style="display:flex;gap:8px">
+      <button class="hdr-btn" id="histBtn" title="Run history">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15 15"/></svg>
+      </button>
+      <button class="hdr-btn" id="settingsBtn" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
   </div>
 
-  <!-- Resume pill -->
-  <div class="resume-pill" id="resumePill">
-    <div class="rp-left">
-      <div class="rp-eye">▶ Resume</div>
-      <div class="rp-title" id="rpTitle">–</div>
-      <div class="rp-sub" id="rpSub">–</div>
-    </div>
-    <div class="rp-arrow">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
-    <button class="rp-dismiss" id="rpDismiss" title="Discard">✕</button>
+  <div class="last-run-bar" id="lastRunBar">
+    <div class="lr-stats" id="lastRunStats"></div>
   </div>
 
-  <div class="grid-label">Choose a plan</div>
-  <div class="plan-grid" id="planGrid"></div>
+  <div class="resume-strip" id="resumeStrip">
+    <div class="rs-left">
+      <div class="rs-eye">▶ Resume workout</div>
+      <div class="rs-title" id="rsTitle">–</div>
+      <div class="rs-sub" id="rsSub">–</div>
+    </div>
+    <div class="rs-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <button class="rs-dismiss" id="rsDismiss">✕</button>
+  </div>
+
+  <div class="section-eyebrow">Training Plans</div>
+  <div class="plan-rows" id="planRows"></div>
+
+  <div class="home-stats" id="homeStats">
+    <div class="hs-divider"></div>
+    <div class="hs-eyebrow">Your Progress</div>
+    <div class="streak-row"><div class="streak-num" id="streakNum">0</div><div class="streak-lbl">Day streak</div><div class="streak-fire" id="streakFire"></div></div>
+    <div class="hs-numbers" id="hsNumbers"></div>
+    <div class="hs-quote" id="hsQuote"></div>
+  </div>
 </div>
 
-<!-- ══════════ SCREEN 2: SESSION PICKER ══════════ -->
+<!-- HISTORY SCREEN -->
+<div class="screen" id="sHistory">
+  <div class="hist-header">
+    <div class="hist-title">History</div>
+    <button class="hdr-btn" id="histBack">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="hist-rows" id="histRows"></div>
+</div>
+
+<!-- S2: SESSION LIST -->
 <div class="screen" id="sSessionPick">
   <div class="sp-header">
-    <button class="sp-back" id="spBack">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Plans
-    </button>
-    <div class="sp-plan-info" id="spPlanInfo"></div>
+    <div class="sp-topbar"><button class="sp-back" id="spBack"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Plans</button></div>
+    <div class="sp-plan-hero" id="spHero"></div>
   </div>
-
-  <div class="sp-sessions-label">Sessions</div>
-  <div class="session-cards" id="sessionCards"></div>
-
-  <div class="sp-start-bar">
-    <button class="btn-start" id="btnStartSess">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Start Session
-    </button>
-  </div>
+  <div class="sess-eyebrow">Sessions</div>
+  <div class="session-rows" id="sessionRows"></div>
+  <div class="sp-start-bar"><button class="btn-start" id="btnStartSess"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start Session</button></div>
 </div>
 
-<!-- ══════════ SCREEN 3: WORKOUT ══════════ -->
+<!-- S3: WORKOUT -->
 <div class="screen" id="sWorkout">
-
   <div class="wo-topbar">
-    <button class="wo-back" id="woBack">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      Plans
-    </button>
-    <div class="wo-id" id="woId">–</div>
+    <button class="wo-back" id="woBack"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Plans</button>
+    <div class="wo-sess-name" id="woSessName">–</div>
   </div>
 
-  <!-- Phase card -->
-  <div class="phase-card pc-ready" id="phaseCard">
-    <div class="pc-top">
-      <div class="pc-phase-name" id="pcName">Ready</div>
-      <div class="pc-phase-icon" id="pcIcon">🎯</div>
+  <div class="diff-nudge" id="diffNudge">
+    <div class="diff-lbl">Adjust difficulty on the fly</div>
+    <div class="diff-btns">
+      <button class="diff-btn" id="diffEasy">↓ Easier</button>
+      <button class="diff-btn" id="diffHard">↑ Harder</button>
     </div>
-    <div class="pc-timer" id="pcTimer">0:00</div>
-    <div class="pc-duration-label" id="pcDurLabel">Tap Start when you're ready</div>
   </div>
 
-  <!-- Segment strip -->
+  <div class="pace-zone" id="paceZone">
+    <div class="pz-dot" id="pzDot"></div>
+    <div class="pz-text" id="pzText">–</div>
+  </div>
+
+  <div class="phase-hero">
+    <div class="ph-eyebrow" id="phEye">Ready</div>
+    <div class="ph-phase"   id="phPhase">–</div>
+    <div class="ph-timer"   id="phTimer">0:00</div>
+    <div class="ph-dur"     id="phDur">Tap Start when you're ready</div>
+  </div>
+
   <div class="seg-strip" id="segStrip"></div>
-  <div class="prog-label">
-    <span id="plLeft">–</span>
-    <span id="plRight">–</span>
-  </div>
+  <div class="seg-label"><span id="slLeft">–</span><span id="slRight">–</span></div>
+  <div class="wo-divider"></div>
+  <div class="next-up"><div class="nu-label">Next</div><div class="nu-val" id="nuVal">–</div><div class="nu-dur" id="nuDur"></div></div>
 
-  <!-- Next up -->
-  <div class="next-card">
-    <div class="nc-icon" id="ncIcon">–</div>
-    <div class="nc-text" id="ncText">Press Start to begin</div>
-  </div>
-
-  <!-- Controls -->
   <div class="ctrl-wrap">
     <div class="ctrl-row">
       <button class="c-side" id="skipBtn" disabled>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
         <span class="c-side-lbl">Skip</span>
       </button>
-      <button class="c-main" id="startBtn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Start
-      </button>
+      <button class="c-main" id="startBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start</button>
       <button class="c-side" id="resetBtn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
         <span class="c-side-lbl">Reset</span>
       </button>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-b"><div class="stat-v" id="sTot">0:00</div><div class="stat-l">Total</div></div>
-    <div class="stat-b"><div class="stat-v" id="sRun">0:00</div><div class="stat-l">Running</div></div>
-    <div class="stat-b"><div class="stat-v" id="sWlk">0:00</div><div class="stat-l">Walking</div></div>
+  <div class="stats-inline">
+    <div class="stat-i"><div class="stat-v" id="sTot">0:00</div><div class="stat-l">Total</div></div>
+    <div class="stat-i"><div class="stat-v" id="sRun">0:00</div><div class="stat-l">Running</div></div>
+    <div class="stat-i"><div class="stat-v" id="sWlk">0:00</div><div class="stat-l">Walking</div></div>
+  </div>
+  <div class="stats-inline" style="margin-top:14px">
+    <div class="stat-i"><div class="stat-v" id="sDist">–</div><div class="stat-l">Miles</div></div>
+    <div class="stat-i"><div class="stat-v" id="sPace">–</div><div class="stat-l">Avg Pace</div></div>
+    <div class="stat-i"><div class="stat-v gps-status"><span id="gpsIcon"><div class="gps-dot"></div><span class="gps-lbl">Off</span></span></div><div class="stat-l">GPS</div></div>
   </div>
 
-  <!-- Finish overlay -->
   <div class="fin-overlay" id="finOverlay">
-    <div class="fin-icon">🏁</div>
-    <div class="fin-title">Done!</div>
-    <div class="fin-stats" id="finStats">–</div>
-    <div class="fin-next-box" id="finNextBox" style="display:none">
-      <div class="fin-next-eye">Up next</div>
+    <div class="fin-eyebrow">Workout complete</div>
+    <div class="fin-title">Well<br>done.</div>
+    <div class="fin-sub" id="finSub">–</div>
+    <div class="fin-sub" id="finDistSub" style="margin-top:4px;display:none">–</div>
+    <div class="fin-divider"></div>
+    <div id="finNextWrap" style="display:none">
+      <div class="fin-next-label">Up next</div>
       <div class="fin-next-name" id="finNextName">–</div>
     </div>
+    <div class="fin-spacer"></div>
     <div class="fin-btns">
       <button class="btn-fin-p" id="finNextBtn" style="display:none">Start Next Session</button>
       <button class="btn-fin-s" id="finHomeBtn">Back to Plans</button>
@@ -564,25 +404,16 @@ header, .screen, .sheet-overlay {
   </div>
 </div>
 
-<!-- Settings sheet -->
+<!-- Settings -->
 <div class="sheet-overlay" id="sheetOverlay">
   <div class="sheet">
-    <div class="sh-hdr">
-      <div class="sh-title">Audio & Cues</div>
-      <button class="sh-close" id="shClose">✕</button>
-    </div>
-    <div class="tog-row">
-      <div class="tog-info"><div class="tog-lbl">Voice Announcements</div><div class="tog-sub">Exact duration spoken aloud</div></div>
-      <label class="tog"><input type="checkbox" id="togVoice" checked><span class="tog-sl"></span></label>
-    </div>
-    <div class="tog-row">
-      <div class="tog-info"><div class="tog-lbl">Countdown Beeps</div><div class="tog-sub">3-2-1 ticks before switch</div></div>
-      <label class="tog"><input type="checkbox" id="togBeep" checked><span class="tog-sl"></span></label>
-    </div>
-    <div class="tog-row">
-      <div class="tog-info"><div class="tog-lbl">Switch Chime</div><div class="tog-sub">Tone on phase change</div></div>
-      <label class="tog"><input type="checkbox" id="togChime" checked><span class="tog-sl"></span></label>
-    </div>
+    <div class="sh-hdr"><div class="sh-title">Audio & Cues</div><button class="sh-close" id="shClose">✕</button></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Voice Announcements</div><div class="tog-sub">Exact duration spoken aloud</div></div><label class="tog"><input type="checkbox" id="togVoice" checked><span class="tog-sl"></span></label></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Mile Split Announcements</div><div class="tog-sub">Pace called out at each mile</div></div><label class="tog"><input type="checkbox" id="togSplits" checked><span class="tog-sl"></span></label></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Halfway Cue</div><div class="tog-sub">Announcement at workout midpoint</div></div><label class="tog"><input type="checkbox" id="togHalf" checked><span class="tog-sl"></span></label></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Countdown Beeps</div><div class="tog-sub">3-2-1 ticks before each switch</div></div><label class="tog"><input type="checkbox" id="togBeep" checked><span class="tog-sl"></span></label></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Switch Chime</div><div class="tog-sub">Tone on phase change</div></div><label class="tog"><input type="checkbox" id="togChime" checked><span class="tog-sl"></span></label></div>
+    <div class="tog-row"><div class="tog-info"><div class="tog-lbl">Haptic Feedback</div><div class="tog-sub">Vibration on phase switch</div></div><label class="tog"><input type="checkbox" id="togHaptic" checked><span class="tog-sl"></span></label></div>
     <button class="sh-save" id="shSave">Save</button>
   </div>
 </div>
@@ -590,504 +421,549 @@ header, .screen, .sheet-overlay {
 <script>
 'use strict';
 
-// ═══════════════ PLAN ACCENT COLORS ═══════════════
-const ACCENTS = ['#7c6af7','#d4ff4e','#ff6b6b','#4ec9ff','#ff9f43'];
-
-// ═══════════════ TRAINING DATA ═══════════════
-function reps(r,w,n){ const o=[]; for(let i=0;i<n;i++){o.push({phase:'run',label:'Run',dur:r},{phase:'walk',label:'Walk',dur:w});} return o; }
-function s(phase,label,dur){return{phase,label,dur};}
-function wu(d){return s('walk','Warm-up Walk',d);}
-function cd(d){return s('walk','Cool-down Walk',d);}
+// ═══ DATA ═══
+function reps(r,w,n){const o=[];for(let i=0;i<n;i++){o.push({phase:'run',label:'Run',dur:r},{phase:'walk',label:'Walk',dur:w});}return o;}
+function sg(ph,lb,d){return{phase:ph,label:lb,dur:d};}
+function wu(d){return sg('walk','Warm-up Walk',d);}
+function cd(d){return sg('walk','Cool-down Walk',d);}
 
 const LEVELS=[
-  {
-    id:'foundation',emoji:'🌱',name:'Foundation',
-    desc:"Brand new to running — start here. Very short run bursts build the habit without wrecking your body.",
-    source:'Mayo Clinic / NHS pre-C25K',
-    sessions:[
-      {name:'W1 – First Steps',
-       desc:"15 seconds running, 45 seconds walking, 15 times. Easy enough that you finish feeling like you barely tried — that's exactly the point.",
-       segs:reps(15,45,15)},
-      {name:'W2 – Building Base',
-       desc:"20 seconds running, 40 seconds walking, 15 rounds. You should still be able to hold a full conversation throughout.",
-       segs:reps(20,40,15)},
-      {name:'W3 – Finding Rhythm',
-       desc:"25 seconds running, 35 seconds walking, 14 rounds. Focus on relaxed form, not speed.",
-       segs:reps(25,35,14)},
-      {name:'W4 – Half-Minute Runs',
-       desc:"Equal 30 seconds running and 30 seconds walking. If this feels comfortable, you're ready for the Beginner plan.",
-       segs:reps(30,30,14)},
-    ]
-  },
-  {
-    id:'beginner',emoji:'🏃',name:'Beginner',
-    desc:"The classic Couch to 5K programme. Six sessions that take you from 1-minute jogs to 8-minute runs.",
-    source:'C25K / NHS',
-    sessions:[
-      {name:'W1 – Run/Walk',
-       desc:"1 minute running, 90 seconds walking, 8 rounds — bookended by 5-minute warm-up and cool-down walks. The runs feel short on purpose.",
-       segs:[wu(300),...reps(60,90,8),cd(300)]},
-      {name:'W2 – Longer Runs',
-       desc:"90 seconds running, 2 minutes walking, 6 rounds. You're spending more time running than walking for the first time — stay conversational.",
-       segs:[wu(300),...reps(90,120,6),cd(300)]},
-      {name:'W3 – Mixed Blocks',
-       desc:"Two cycles of 90s run / 90s walk / 3m run / 3m walk. The 3-minute runs are the new challenge — don't go out too fast.",
-       segs:[wu(300),s('run','Run',90),s('walk','Walk',90),s('run','Run',180),s('walk','Walk',180),s('run','Run',90),s('walk','Walk',90),s('run','Run',180),s('walk','Walk',180),cd(300)]},
-      {name:'W4 – 5-Minute Runs',
-       desc:"3m run / 90s walk / 5m run / 2.5m walk, twice through. Slow your pace on the 5-minute blocks if you need to — don't walk early.",
-       segs:[wu(300),s('run','Run',180),s('walk','Walk',90),s('run','Run',300),s('walk','Walk',150),s('run','Run',180),s('walk','Walk',90),s('run','Run',300),s('walk','Walk',150),cd(300)]},
-      {name:'W5D1 – Three 5-Min Runs',
-       desc:"Three 5-minute runs with 3-minute walking recovery between each. Pace the first one conservatively so you have something left for the third.",
-       segs:[wu(300),s('run','Run',300),s('walk','Walk',180),s('run','Run',300),s('walk','Walk',180),s('run','Run',300),cd(300)]},
-      {name:'W5D2 – 8-Minute Runs',
-       desc:"Two 8-minute runs with a 5-minute walking break between them. Go slower than feels necessary on the first one.",
-       segs:[wu(300),s('run','Run',480),s('walk','Walk',300),s('run','Run',480),cd(300)]},
-    ]
-  },
-  {
-    id:'intermediate',emoji:'🔥',name:'Intermediate',
-    desc:"You can run 8–10 minutes without stopping. These sessions build you to 30 minutes continuous — the point where most people call themselves a runner.",
-    source:'C25K W5–9 + Galloway',
-    sessions:[
-      {name:'W1 – First 20-Minute Run',
-       desc:"20 minutes continuous, no walk breaks. Start slower than feels necessary — the goal is just to keep moving the whole time.",
-       segs:[wu(300),s('run','Run',1200),cd(300)]},
-      {name:'W2 – 5/3/8/3/5 Ladder',
-       desc:"5m run / 3m walk / 8m run / 3m walk / 5m run. The 8-minute block is the hardest — get through it and the final 5 is your victory lap.",
-       segs:[wu(300),s('run','Run',300),s('walk','Walk',180),s('run','Run',480),s('walk','Walk',180),s('run','Run',300),cd(300)]},
-      {name:'W3 – 10 / 3 / 10',
-       desc:"Two 10-minute runs with a 3-minute walk between them. Treat it as one 23-minute effort with a breather in the middle.",
-       segs:[wu(300),s('run','Run',600),s('walk','Walk',180),s('run','Run',600),cd(300)]},
-      {name:'W4 – 25-Minute Continuous',
-       desc:"Five more minutes than your first big run. When it gets hard around minute 18, remind yourself you've been here before.",
-       segs:[wu(300),s('run','Run',1500),cd(300)]},
-      {name:'W5 – 28-Minute Continuous',
-       desc:"Three more minutes than last time. Go at a pace where you could speak in short sentences but wouldn't want to.",
-       segs:[wu(300),s('run','Run',1680),cd(300)]},
-      {name:'W6 – 30-Minute Run 🎉',
-       desc:"Thirty minutes continuous — most people cover a 5K in this time. Run it easy, enjoy it, you've earned it.",
-       segs:[wu(300),s('run','Run',1800),cd(300)]},
-    ]
-  },
-  {
-    id:'galloway',emoji:'⚡',name:'Galloway Method',
-    desc:"Planned walk breaks on purpose — not because you're tired. Reduces injury, extends distance, and most runners go faster long-term.",
-    source:'Jeff Galloway run-walk-run',
-    sessions:[
-      {name:'L1 – 30:30 Intro',
-       desc:"30 seconds running, 30 seconds walking, 20 rounds. Feels almost too easy — that's correct, the walk breaks are strategy not weakness.",
-       segs:reps(30,30,20)},
-      {name:'L2 – 1:1 Ratio',
-       desc:"1 minute running, 1 minute walking, 20 rounds. Focus on running the run portions at a genuinely easy, sustainable effort.",
-       segs:reps(60,60,20)},
-      {name:'L3 – 2:1 Ratio',
-       desc:"2 minutes running for every 1 minute walking, 16 rounds. You're covering close to 3 miles — keep the walking brisk.",
-       segs:reps(120,60,16)},
-      {name:'L4 – 3:1 Ratio',
-       desc:"3 minutes running, 1 minute walking, 12 rounds. This is where most recreational runners land for long runs and races.",
-       segs:reps(180,60,12)},
-      {name:'L5 – 4:1 Ratio',
-       desc:"4 minutes running, 1 minute walking, 10 rounds. You're running 80% of the time — the walk break is your reward.",
-       segs:reps(240,60,10)},
-      {name:'L6 – 5:1 Ratio',
-       desc:"5 minutes running, 1 minute walking, 8 rounds. Nearly continuous with a scheduled recovery every 5 minutes — this ratio works well for half marathons.",
-       segs:reps(300,60,8)},
-    ]
-  },
-  {
-    id:'speed',emoji:'🏅',name:'Speed Builder',
-    desc:"You can run 30+ minutes comfortably. Now get faster — these sessions use hard efforts and walking recovery to build VO₂max and lactate threshold.",
-    source:'RunnersConnect / Daniels Running Formula',
-    sessions:[
-      {name:'Fartlek Surges',
-       desc:"10-min warm-up then 1 minute hard / 2 minutes easy × 8. Run the surges by feel, not by pace — fartlek means 'speed play.'",
-       segs:[wu(600),...(()=>{const a=[];for(let i=0;i<8;i++){a.push(s('run','Surge',60),s('walk','Easy',120));}return a;})(),cd(300)]},
-      {name:'Tempo Intervals',
-       desc:"10-min warm-up then 3 minutes at comfortably hard / 90 seconds walking × 5. This builds the lactate threshold that determines your race pace.",
-       segs:[wu(600),...(()=>{const a=[];for(let i=0;i<5;i++){a.push(s('run','Tempo',180),s('walk','Recover',90));}return a;})(),cd(300)]},
-      {name:'400m Repeats',
-       desc:"10-min warm-up then 45 seconds near-maximal / 90 seconds walking × 10. Short, intense, and effective at training your body to run fast when fatigued.",
-       segs:[wu(600),...(()=>{const a=[];for(let i=0;i<10;i++){a.push(s('run','Sprint',45),s('walk','Recover',90));}return a;})(),cd(300)]},
-      {name:'Pyramid',
-       desc:"1 / 2 / 3 / 2 / 1 minutes hard with 90 seconds walking between each. The pyramid peaks at 3 minutes then comes back down — total hard effort is 9 minutes.",
-       segs:[wu(600),s('run','Sprint',60),s('walk','Recover',90),s('run','Sprint',120),s('walk','Recover',90),s('run','Sprint',180),s('walk','Recover',90),s('run','Sprint',120),s('walk','Recover',90),s('run','Sprint',60),cd(300)]},
-    ]
-  },
+  {id:'foundation',emoji:'🌱',name:'Foundation',desc:"Brand new to running — start here. Very short run bursts build the habit without wrecking your body.",source:'Mayo Clinic / NHS pre-C25K',
+   sessions:[
+    {name:'W1 – First Steps',desc:"15 seconds running, 45 seconds walking, 15 times. Easy enough that you finish feeling like you barely tried — that's exactly the point.",segs:reps(15,45,15)},
+    {name:'W2 – Building Base',desc:"20 seconds running, 40 seconds walking, 15 rounds. You should still be able to hold a full conversation throughout.",segs:reps(20,40,15)},
+    {name:'W3 – Finding Rhythm',desc:"25 seconds running, 35 seconds walking, 14 rounds. Focus on relaxed form, not speed.",segs:reps(25,35,14)},
+    {name:'W4 – Half-Minute Runs',desc:"Equal 30 seconds running and 30 seconds walking. If this feels comfortable, you're ready for the Beginner plan.",segs:reps(30,30,14)},
+  ]},
+  {id:'beginner',emoji:'🏃',name:'Beginner',desc:"The classic Couch to 5K programme. Six sessions that take you from 1-minute jogs to 8-minute runs.",source:'C25K / NHS',
+   sessions:[
+    {name:'W1 – Run/Walk',desc:"1 minute running, 90 seconds walking, 8 rounds — bookended by 5-minute warm-up and cool-down walks. The runs feel short on purpose.",segs:[wu(300),...reps(60,90,8),cd(300)]},
+    {name:'W2 – Longer Runs',desc:"90 seconds running, 2 minutes walking, 6 rounds. You're spending more time running than walking for the first time — stay conversational.",segs:[wu(300),...reps(90,120,6),cd(300)]},
+    {name:'W3 – Mixed Blocks',desc:"Two cycles of 90s run / 90s walk / 3m run / 3m walk. The 3-minute runs are the new challenge — don't go out too fast.",segs:[wu(300),sg('run','Run',90),sg('walk','Walk',90),sg('run','Run',180),sg('walk','Walk',180),sg('run','Run',90),sg('walk','Walk',90),sg('run','Run',180),sg('walk','Walk',180),cd(300)]},
+    {name:'W4 – 5-Minute Runs',desc:"3m run / 90s walk / 5m run / 2.5m walk, twice through. Slow your pace on the 5-minute blocks if you need to.",segs:[wu(300),sg('run','Run',180),sg('walk','Walk',90),sg('run','Run',300),sg('walk','Walk',150),sg('run','Run',180),sg('walk','Walk',90),sg('run','Run',300),sg('walk','Walk',150),cd(300)]},
+    {name:'W5D1 – Three 5-Min Runs',desc:"Three 5-minute runs with 3-minute walking recovery between each. Pace the first one conservatively.",segs:[wu(300),sg('run','Run',300),sg('walk','Walk',180),sg('run','Run',300),sg('walk','Walk',180),sg('run','Run',300),cd(300)]},
+    {name:'W5D2 – 8-Minute Runs',desc:"Two 8-minute runs with a 5-minute walking break between them. Go slower than feels necessary on the first one.",segs:[wu(300),sg('run','Run',480),sg('walk','Walk',300),sg('run','Run',480),cd(300)]},
+  ]},
+  {id:'intermediate',emoji:'🔥',name:'Intermediate',desc:"You can run 8–10 minutes without stopping. These sessions build you to 30 minutes continuous.",source:'C25K W5–9 + Galloway',
+   sessions:[
+    {name:'W1 – First 20-Min Run',desc:"20 minutes continuous, no walk breaks. Start slower than feels necessary.",segs:[wu(300),sg('run','Run',1200),cd(300)]},
+    {name:'W2 – 5/3/8/3/5 Ladder',desc:"5m / 3m walk / 8m / 3m walk / 5m run. The 8-minute block is the hardest.",segs:[wu(300),sg('run','Run',300),sg('walk','Walk',180),sg('run','Run',480),sg('walk','Walk',180),sg('run','Run',300),cd(300)]},
+    {name:'W3 – 10 / 3 / 10',desc:"Two 10-minute runs with a 3-minute walk between them. Treat it as one effort with a breather.",segs:[wu(300),sg('run','Run',600),sg('walk','Walk',180),sg('run','Run',600),cd(300)]},
+    {name:'W4 – 25-Min Continuous',desc:"Five more minutes than your first big run. When it gets hard around minute 18, remind yourself you've been here before.",segs:[wu(300),sg('run','Run',1500),cd(300)]},
+    {name:'W5 – 28-Min Continuous',desc:"Three more minutes than last time. Go at a pace where you could speak in short sentences but wouldn't want to.",segs:[wu(300),sg('run','Run',1680),cd(300)]},
+    {name:'W6 – 30-Min Run 🎉',desc:"Thirty minutes continuous — most people cover a 5K in this time. Run it easy, enjoy it.",segs:[wu(300),sg('run','Run',1800),cd(300)]},
+  ]},
+  {id:'galloway',emoji:'⚡',name:'Galloway Method',desc:"Planned walk breaks on purpose — not because you're tired. Reduces injury, extends distance, most runners go faster long-term.",source:'Jeff Galloway run-walk-run',
+   sessions:[
+    {name:'L1 – 30:30 Intro',desc:"30 seconds running, 30 seconds walking, 20 rounds. Feels almost too easy — that's correct.",segs:reps(30,30,20)},
+    {name:'L2 – 1:1 Ratio',desc:"1 minute running, 1 minute walking, 20 rounds. Run portions at a genuinely easy, sustainable effort.",segs:reps(60,60,20)},
+    {name:'L3 – 2:1 Ratio',desc:"2 minutes running for every 1 minute walking, 16 rounds. Covering close to 3 miles.",segs:reps(120,60,16)},
+    {name:'L4 – 3:1 Ratio',desc:"3 minutes running, 1 minute walking, 12 rounds. Where most recreational runners land for long runs.",segs:reps(180,60,12)},
+    {name:'L5 – 4:1 Ratio',desc:"4 minutes running, 1 minute walking, 10 rounds. Running 80% of the time.",segs:reps(240,60,10)},
+    {name:'L6 – 5:1 Ratio',desc:"5 minutes running, 1 minute walking, 8 rounds. Nearly continuous with scheduled recovery.",segs:reps(300,60,8)},
+  ]},
+  {id:'speed',emoji:'🏅',name:'Speed Builder',desc:"You can run 30+ minutes comfortably. Hard efforts and walking recovery to build VO₂max and lactate threshold.",source:'RunnersConnect / Daniels Running Formula',
+   sessions:[
+    {name:'Fartlek Surges',desc:"10-min warm-up then 1 minute hard / 2 minutes easy × 8. Run the surges by feel.",segs:[wu(600),...(()=>{const a=[];for(let i=0;i<8;i++){a.push(sg('run','Surge',60),sg('walk','Easy',120));}return a;})(),cd(300)]},
+    {name:'Tempo Intervals',desc:"10-min warm-up then 3 minutes comfortably hard / 90 seconds walking × 5. Builds lactate threshold.",segs:[wu(600),...(()=>{const a=[];for(let i=0;i<5;i++){a.push(sg('run','Tempo',180),sg('walk','Recover',90));}return a;})(),cd(300)]},
+    {name:'400m Repeats',desc:"10-min warm-up then 45 seconds near-maximal / 90 seconds walking × 10. Short, intense, effective.",segs:[wu(600),...(()=>{const a=[];for(let i=0;i<10;i++){a.push(sg('run','Sprint',45),sg('walk','Recover',90));}return a;})(),cd(300)]},
+    {name:'Pyramid',desc:"1/2/3/2/1 minutes hard with 90 seconds walking between each. Peaks at 3 minutes then comes back down.",segs:[wu(600),sg('run','Sprint',60),sg('walk','Recover',90),sg('run','Sprint',120),sg('walk','Recover',90),sg('run','Sprint',180),sg('walk','Recover',90),sg('run','Sprint',120),sg('walk','Recover',90),sg('run','Sprint',60),cd(300)]},
+  ]},
 ];
 
-// ═══════════════ PREFS & PROGRESS ═══════════════
+// ═══ PREFS & PROGRESS ═══
 let P={};
-function loadP(){
-  try{P=JSON.parse(localStorage.getItem('pu4_prefs')||'{}');}catch(e){P={};}
-  ['voice','beep','chime'].forEach(k=>{if(P[k]===undefined)P[k]=true;});
-}
-function saveP(){localStorage.setItem('pu4_prefs',JSON.stringify(P));}
-function getProg(){try{return JSON.parse(localStorage.getItem('pu4_prog')||'{}');}catch(e){return{};}}
-function saveProg(o){localStorage.setItem('pu4_prog',JSON.stringify(o));}
+function loadP(){try{P=JSON.parse(localStorage.getItem('pu6_prefs')||'{}');}catch(e){P={};}
+  ['voice','beep','chime','haptic','splits','half'].forEach(k=>{if(P[k]===undefined)P[k]=true;});}
+function saveP(){localStorage.setItem('pu6_prefs',JSON.stringify(P));}
+function getProg(){try{return JSON.parse(localStorage.getItem('pu6_prog')||'{}');}catch(e){return{};}}
+function saveProg(o){localStorage.setItem('pu6_prog',JSON.stringify(o));}
 
-// ═══════════════ AUDIO ═══════════════
+// ═══ AUDIO ═══
 let _ac=null;
 function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
-function tone(f,d,t='sine',v=0.3){
-  try{const ctx=ac(),o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);o.type=t;
-    o.frequency.setValueAtTime(f,ctx.currentTime);
-    g.gain.setValueAtTime(v,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);
-    o.start();o.stop(ctx.currentTime+d);}catch(e){}
-}
-function chime(phase){
-  if(!P.chime)return;
-  if(phase==='run'){tone(880,.11,'square',.26);setTimeout(()=>tone(1047,.17,'square',.26),130);}
-  else{tone(523,.11,'sine',.24);setTimeout(()=>tone(392,.17,'sine',.24),130);}
-}
-function beep(){if(P.beep)tone(700,.09,'sine',.18);}
-function speakCue(seg){
+function tone(f,d,t='sine',v=0.28){try{const ctx=ac(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type=t;o.frequency.setValueAtTime(f,ctx.currentTime);g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);o.start();o.stop(ctx.currentTime+d);}catch(e){}}
+function chime(ph){if(!P.chime)return;if(ph==='run'){tone(880,.11,'square',.24);setTimeout(()=>tone(1047,.17,'square',.24),130);}else{tone(523,.11,'sine',.22);setTimeout(()=>tone(392,.17,'sine',.22),130);}}
+function beep(){if(P.beep)tone(700,.09,'sine',.16);}
+function haptic(pattern=[50]){if(P.haptic&&navigator.vibrate)navigator.vibrate(pattern);}
+function speakCue(s){
   if(!P.voice||!window.speechSynthesis)return;
   window.speechSynthesis.cancel();
-  const d=seg.dur;
-  const durTxt = d<60?`${d} seconds`:d%60===0?`${d/60} minute${d/60!==1?'s':''}`:`${Math.floor(d/60)} minute${Math.floor(d/60)!==1?'s':''} ${d%60} seconds`;
-  const u=new SpeechSynthesisUtterance(`${seg.label}. ${durTxt}.`);
-  u.rate=1.05;window.speechSynthesis.speak(u);
+  const d=s.dur;
+  const dt=d<60?`${d} seconds`:d%60===0?`${d/60} minute${d/60!==1?'s':''}`:`${Math.floor(d/60)} minute${Math.floor(d/60)!==1?'s':''} ${d%60} seconds`;
+  const u=new SpeechSynthesisUtterance(`${s.label}. ${dt}.`);u.rate=1.05;window.speechSynthesis.speak(u);
+}
+function speak(txt){
+  if(!P.voice||!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);u.rate=1.05;window.speechSynthesis.speak(u);
 }
 
-// ═══════════════ FORMAT ═══════════════
+// ═══ FORMAT ═══
 function fmt(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
-function fmtX(s){
-  if(s<60)return`${s}s`;
-  if(s%60===0)return`${s/60}m`;
-  return`${Math.floor(s/60)}m ${s%60}s`;
+function fmtX(s){if(s<60)return`${s}s`;if(s%60===0)return`${s/60}m`;return`${Math.floor(s/60)}m ${s%60}s`;}
+function fmtDate(ts){const d=new Date(ts);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+
+// ═══ GPS ═══
+let gpsWatcher=null,lastPos=null,totalDistM=0,gpsState='off';
+const R_EARTH=6371000;
+function haversine(la1,lo1,la2,lo2){const r=d=>d*Math.PI/180,dLa=r(la2-la1),dLo=r(lo2-lo1),a=Math.sin(dLa/2)**2+Math.cos(r(la1))*Math.cos(r(la2))*Math.sin(dLo/2)**2;return R_EARTH*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function m2mi(m){return m/1609.344;}
+function fmtPace(mps){if(!mps||mps<=0)return'–';const spm=1/mps;if(spm>3600||spm<60)return'–';return`${Math.floor(spm/60)}:${String(Math.round(spm%60)).padStart(2,'0')}`;}
+function setGpsState(state,label){gpsState=state;const el=document.getElementById('gpsIcon');if(!el)return;el.innerHTML=`<div class="gps-dot ${state==='searching'?'searching':state==='locked'?'locked':state==='error'?'error':''}"></div><span class="gps-lbl">${label}</span>`;}
+function startGPS(){
+  if(!('geolocation'in navigator)){setGpsState('error','N/A');return;}
+  lastPos=null;totalDistM=0;setGpsState('searching','Finding…');updateDistUI();
+  gpsWatcher=navigator.geolocation.watchPosition(
+    pos=>{const{latitude:lat,longitude:lon,accuracy}=pos.coords;
+      if(accuracy>40){setGpsState('searching','Weak');return;}
+      setGpsState('locked','Locked');
+      if(lastPos){const d=haversine(lastPos.lat,lastPos.lon,lat,lon);if(d<50)totalDistM+=d;}
+      lastPos={lat,lon};updateDistUI();checkMileSplit();},
+    err=>{if(err.code===1)setGpsState('error','Denied');else if(err.code===2)setGpsState('error','No signal');else setGpsState('searching','Retrying…');},
+    {enableHighAccuracy:true,maximumAge:2000,timeout:10000}
+  );
+}
+function stopGPS(){if(gpsWatcher!==null){navigator.geolocation.clearWatch(gpsWatcher);gpsWatcher=null;}}
+function resetGPS(){stopGPS();lastPos=null;totalDistM=0;lastMileAnnounced=0;gpsState='off';setGpsState('off','Off');updateDistUI();}
+function updateDistUI(){
+  const miles=m2mi(totalDistM);
+  const de=document.getElementById('sDist'),pe=document.getElementById('sPace');
+  if(!de||!pe)return;
+  de.textContent=miles>=0.05?miles.toFixed(2):'0.00';
+  if(runSec>10&&miles>0.02){const mps=miles/runSec;pe.textContent=fmtPace(mps)+'/mi';updatePaceZone(mps);}
+  else{pe.textContent='–';}
 }
 
-// ═══════════════ STATE ═══════════════
-let selLvl=0,selSess=0;
-let schedule=[],schIdx=0,secsLeft=0;
-let th=null,isRunning=false;
-let totSec=0,runSec=0,wlkSec=0;
+// ═══ MILE SPLITS ═══
+let lastMileAnnounced=0;
+function checkMileSplit(){
+  if(!P.splits)return;
+  const miles=m2mi(totalDistM);
+  const crossed=Math.floor(miles);
+  if(crossed>0&&crossed>lastMileAnnounced){
+    lastMileAnnounced=crossed;
+    const mps=runSec>0?miles/runSec:0;
+    const paceStr=fmtPace(mps);
+    speak(`Mile ${crossed}. Pace ${paceStr} per mile.`);
+    haptic([30,50,30]);
+  }
+}
 
-// ═══════════════ SCREEN 1: PLAN GRID ═══════════════
-function renderGrid(){
+// ═══ PACE ZONE ═══
+let targetPace=null; // seconds per mile — set from first GPS reading after 0.1mi
+function updatePaceZone(milesPerSec){
+  const pz=document.getElementById('paceZone');
+  const dot=document.getElementById('pzDot');
+  const txt=document.getElementById('pzText');
+  if(!pz||!dot||!txt)return;
+  const spm=milesPerSec>0?1/milesPerSec:0;
+  if(!targetPace&&m2mi(totalDistM)>0.1&&spm>60&&spm<1800){targetPace=spm;}
+  if(!targetPace||!isRunning){pz.classList.remove('show');return;}
+  pz.classList.add('show');
+  const diff=(spm-targetPace)/targetPace;
+  if(diff< -0.12){dot.className='pz-dot fast';txt.textContent='Running fast — ease off a little';}
+  else if(diff>0.18){dot.className='pz-dot slow';txt.textContent='Running slow — pick it up if you can';}
+  else{dot.className='pz-dot on';txt.textContent='Good pace — stay here';}
+}
+
+// ═══ STATE ═══
+let selLvl=0,selSess=0,schedule=[],schIdx=0,secsLeft=0;
+let th=null,isRunning=false,totSec=0,runSec=0,wlkSec=0;
+let halfAnnouncedAt=-1;
+
+// ═══ DIFFICULTY ADJUST ═══
+function adjustDifficulty(dir){
+  // dir: 'easier' or 'harder'
+  const current=schedule[schIdx];if(!current)return;
+  const isRun=current.phase==='run';
+  // Modify remaining segments from current onward
+  schedule=schedule.map((s,i)=>{
+    if(i<schIdx)return s;
+    if(s.phase==='run'){
+      const newDur=dir==='easier'?Math.max(15,Math.round(s.dur*0.75)):Math.min(600,Math.round(s.dur*1.25));
+      return{...s,dur:newDur};
+    }
+    if(s.phase==='walk'&&s.label!=='Warm-up Walk'&&s.label!=='Cool-down Walk'){
+      const newDur=dir==='easier'?Math.min(300,Math.round(s.dur*1.25)):Math.max(15,Math.round(s.dur*0.75));
+      return{...s,dur:newDur};
+    }
+    return s;
+  });
+  // If currently mid-segment, don't change secsLeft — just future segs
+  const msg=dir==='easier'?'Intervals made easier.':'Intervals made harder.';
+  speak(msg);haptic([30,30,30]);
+  buildStrip();updateUI();
+}
+
+// ═══ HALFWAY CUE ═══
+function checkHalfway(){
+  if(!P.half)return;
+  const half=Math.floor(schedule.length/2);
+  if(schIdx===half&&halfAnnouncedAt!==half){
+    halfAnnouncedAt=half;
+    const remaining=schedule.slice(schIdx).reduce((a,s)=>a+s.dur,0);
+    speak(`Halfway point. ${fmtX(remaining)} remaining. Turn around if you need to.`);
+    haptic([50,100,50]);
+  }
+}
+
+// ═══ S1: HOME ═══
+function renderPlanList(){
   const prog=getProg();
-  const grid=document.getElementById('planGrid');
-  grid.innerHTML='';
+  const rows=document.getElementById('planRows');
+  rows.innerHTML='';
   LEVELS.forEach((lv,li)=>{
     const total=lv.sessions.length;
     const done=lv.sessions.filter((_,si)=>prog[`d_${li}_${si}`]).length;
-    const pct=total?done/total:0;
-    const accent=ACCENTS[li]||'#888';
-
-    const tile=document.createElement('div');
-    tile.className='plan-tile';
-    tile.style.setProperty('--accent',accent);
-    tile.innerHTML=`
-      <div class="pt-emoji">${lv.emoji}</div>
-      <div class="pt-name">${lv.name}</div>
-      <div class="pt-meta">${lv.desc}</div>
-      <div class="pt-progress">
-        <div class="pt-prog-track"><div class="pt-prog-fill" style="width:${pct*100}%"></div></div>
-        <div class="pt-prog-label">${done}/${total}</div>
-      </div>`;
-    tile.addEventListener('click',()=>openPlan(li));
-    grid.appendChild(tile);
+    const pips=lv.sessions.map((_,si)=>{
+      const isDone=!!prog[`d_${li}_${si}`];
+      const isCur=!prog[`d_${li}_${si}`]&&lv.sessions.slice(0,si).every((_,pi)=>prog[`d_${li}_${pi}`]);
+      return`<div class="pip${isDone?' done':isCur?' cur':''}"></div>`;
+    }).join('');
+    const row=document.createElement('div');
+    row.className='plan-row';
+    row.innerHTML=`<div class="pr-emoji">${lv.emoji}</div><div class="pr-body"><div class="pr-name">${lv.name}</div><div class="pr-meta">${done}/${total} sessions · ${lv.source}</div></div><div class="pr-right"><div class="pr-pips">${pips}</div><div class="pr-arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></div></div>`;
+    row.addEventListener('click',()=>openPlan(li));
+    rows.appendChild(row);
   });
-
-  // Resume pill
   checkResume();
+  renderLastRun();
 }
 
 function checkResume(){
   const prog=getProg();
-  const pill=document.getElementById('resumePill');
-  if(!prog.saved){pill.classList.remove('show');return;}
-  const {lvl,sess,idx,tot}=prog.saved;
-  const lv=LEVELS[lvl]; if(!lv){pill.classList.remove('show');return;}
-  const se=lv.sessions[sess]; if(!se){pill.classList.remove('show');return;}
-  document.getElementById('rpTitle').textContent=`${lv.emoji} ${lv.name} · ${se.name}`;
-  document.getElementById('rpSub').textContent=`Segment ${idx+1} · ${fmt(tot)} elapsed`;
-  pill.classList.add('show');
+  const strip=document.getElementById('resumeStrip');
+  if(!prog.saved){strip.classList.remove('show');return;}
+  const{lvl,sess,idx,tot}=prog.saved;
+  const lv=LEVELS[lvl];const se=lv?.sessions[sess];
+  if(!lv||!se){strip.classList.remove('show');return;}
+  document.getElementById('rsTitle').textContent=`${lv.emoji} ${lv.name} · ${se.name}`;
+  document.getElementById('rsSub').textContent=`Segment ${idx+1} of ${se.segs.length} · ${fmt(tot)} elapsed`;
+  strip.classList.add('show');
 }
 
-// ═══════════════ SCREEN 2: SESSION PICKER ═══════════════
+function renderLastRun(){
+  const prog=getProg();
+  const bar=document.getElementById('lastRunBar');
+  if(!prog.history||prog.history.length===0){bar.classList.remove('show');return;}
+  const last=prog.history[prog.history.length-1];
+  bar.classList.add('show');
+  document.getElementById('lastRunStats').innerHTML=`
+    <div class="lr-stat"><div class="lr-eye">Last Run</div><div class="lr-val">${fmtDate(last.ts)}</div></div>
+    <div class="lr-stat"><div class="lr-eye">Session</div><div class="lr-val" style="font-size:.78rem">${last.name}</div></div>
+    ${last.miles>=0.05?`<div class="lr-stat"><div class="lr-eye">Distance</div><div class="lr-val">${last.miles.toFixed(2)} mi</div></div>`:''}
+    ${last.pace&&last.pace!=='–'?`<div class="lr-stat"><div class="lr-eye">Avg Pace</div><div class="lr-val">${last.pace}/mi</div></div>`:''}`;
+}
+
+// ═══ HISTORY SCREEN ═══
+function renderHistory(){
+  const prog=getProg();
+  const rows=document.getElementById('histRows');
+  if(!prog.history||prog.history.length===0){
+    rows.innerHTML='<div class="hist-empty">No runs logged yet.<br>Complete your first workout to see your history here.</div>';
+    return;
+  }
+  rows.innerHTML='';
+  [...prog.history].reverse().forEach(h=>{
+    const row=document.createElement('div');
+    row.className='hist-row';
+    row.innerHTML=`
+      <div class="hist-date">${fmtDate(h.ts)}</div>
+      <div class="hist-body">
+        <div class="hist-name">${h.name}</div>
+        <div class="hist-meta">
+          <span>⏱ ${fmt(h.totSec)}</span>
+          ${h.miles>=0.05?`<span>📍 ${h.miles.toFixed(2)} mi</span>`:''}
+          ${h.pace&&h.pace!=='–'?`<span>🏃 ${h.pace}/mi</span>`:''}
+          <span>🚶 ${fmt(h.wlkSec)}</span>
+        </div>
+      </div>`;
+    rows.appendChild(row);
+  });
+}
+
+// ═══ HOME STATS ═══
+const QUOTES=[
+  {text:"The miracle isn't that I finished. The miracle is that I had the courage to start.",cite:"John Bingham"},
+  {text:"Run when you can, walk if you have to, crawl if you must — just never give up.",cite:"Dean Karnazes"},
+  {text:"Every mile is two in winter.",cite:"George Herbert"},
+  {text:"The competition is against the little voice inside you that wants you to quit.",cite:"George Sheehan"},
+  {text:"The body does not want you to do this. As you run, it tells you to stop but the mind must be strong.",cite:"Meb Keflezighi"},
+  {text:"Ask yourself: can I give more? The answer is usually yes.",cite:"Paul Tergat"},
+  {text:"Running is the greatest metaphor for life because you get out of it what you put into it.",cite:"Oprah Winfrey"},
+];
+
+function calcStreak(){
+  const prog=getProg();
+  if(!prog.history||prog.history.length===0)return 0;
+  const days=new Set(prog.history.map(h=>new Date(h.ts).toDateString()));
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    if(days.has(d.toDateString()))streak++;
+    else if(i>0)break;
+  }
+  return streak;
+}
+
+function renderHomeStats(){
+  const prog=getProg();
+  let totalDone=0,totalSessions=0,plansStarted=0;
+  LEVELS.forEach((lv,li)=>{let lvDone=0;lv.sessions.forEach((_,si)=>{totalSessions++;if(prog[`d_${li}_${si}`]){totalDone++;lvDone++;}});if(lvDone>0)plansStarted++;});
+  const pct=totalSessions>0?Math.round((totalDone/totalSessions)*100):0;
+  const remaining=totalSessions-totalDone;
+  const totalMiles=(prog.totalMiles||0);
+  const streak=calcStreak();
+
+  document.getElementById('streakNum').textContent=streak;
+  document.getElementById('streakFire').textContent=streak>=3?'🔥':streak>=1?'✨':'';
+
+  document.getElementById('hsNumbers').innerHTML=`
+    <div class="hs-stat"><div class="hs-val">${totalDone}</div><div class="hs-lbl">Sessions done</div></div>
+    <div class="hs-stat"><div class="hs-val">${remaining}</div><div class="hs-lbl">Remaining</div></div>
+    <div class="hs-stat"><div class="hs-val">${pct}%</div><div class="hs-lbl">Complete</div></div>
+    <div class="hs-stat"><div class="hs-val">${plansStarted}</div><div class="hs-lbl">Plans started</div></div>
+    <div class="hs-stat" style="grid-column:1/-1;border-top:1px solid var(--line);padding-top:20px">
+      <div class="hs-val">${totalMiles>=0.1?totalMiles.toFixed(1):'0.0'}</div>
+      <div class="hs-lbl">Total miles logged</div>
+    </div>`;
+  const q=QUOTES[Math.floor(Date.now()/86400000)%QUOTES.length];
+  document.getElementById('hsQuote').innerHTML=`"${q.text}"<cite>— ${q.cite}</cite>`;
+}
+
+// ═══ S2: SESSION LIST ═══
 function openPlan(li){
   selLvl=li;
-  // Auto-select first undone
   const prog=getProg();
-  const firstUndone=LEVELS[li].sessions.findIndex((_,si)=>!prog[`d_${li}_${si}`]);
-  selSess=firstUndone>=0?firstUndone:0;
-  renderSessionPicker();
-  show('sSessionPick');
+  const first=LEVELS[li].sessions.findIndex((_,si)=>!prog[`d_${li}_${si}`]);
+  selSess=first>=0?first:0;
+  renderSessionList();show('sSessionPick');
 }
 
-function renderSessionPicker(){
-  const lv=LEVELS[selLvl];
-  const prog=getProg();
-  const accent=ACCENTS[selLvl]||'#888';
-
-  // Plan info header
-  document.getElementById('spPlanInfo').innerHTML=`
-    <div class="sp-emoji">${lv.emoji}</div>
-    <div class="sp-text">
-      <div class="sp-plan-name" style="color:${accent}">${lv.name}</div>
-      <div class="sp-plan-desc">${lv.desc}</div>
-      <div class="sp-source">${lv.source}</div>
-    </div>`;
-
-  // Session cards
-  const container=document.getElementById('sessionCards');
-  container.innerHTML='';
-
+function renderSessionList(){
+  const lv=LEVELS[selLvl];const prog=getProg();
+  document.getElementById('spHero').innerHTML=`<div class="sp-plan-name">${lv.name}</div><div class="sp-plan-desc">${lv.desc}</div><div class="sp-source">${lv.source}</div>`;
+  const container=document.getElementById('sessionRows');container.innerHTML='';
   lv.sessions.forEach((sess,si)=>{
     const isDone=!!prog[`d_${selLvl}_${si}`];
     const isSel=si===selSess;
     const isNext=!isDone&&lv.sessions.slice(0,si).every((_,pi)=>prog[`d_${selLvl}_${pi}`]);
-
-    // Build interval summary pills
     const runSegs=sess.segs.filter(x=>x.phase==='run');
     const walkSegs=sess.segs.filter(x=>x.phase==='walk'&&x.label!=='Warm-up Walk'&&x.label!=='Cool-down Walk');
-    const hasWU=sess.segs.some(x=>x.label==='Warm-up Walk');
-    const hasCD=sess.segs.some(x=>x.label==='Cool-down Walk');
     const totalDur=sess.segs.reduce((a,x)=>a+x.dur,0);
-
-    // Unique run durations
     const runDurs=[...new Set(runSegs.map(x=>x.dur))];
     const walkDurs=[...new Set(walkSegs.map(x=>x.dur))];
-
+    const hasWU=sess.segs.some(x=>x.label==='Warm-up Walk');
+    const hasCD=sess.segs.some(x=>x.label==='Cool-down Walk');
     let pills='';
-    runDurs.forEach(d=>{pills+=`<span class="sc-pill run-pill">🏃 ${fmtX(d)}</span>`;});
-    walkDurs.forEach(d=>{pills+=`<span class="sc-pill walk-pill">🚶 ${fmtX(d)}</span>`;});
-    if(runSegs.length>1)pills+=`<span class="sc-pill">×${runSegs.length} rounds</span>`;
-    if(hasWU)pills+=`<span class="sc-pill">warmup</span>`;
-    if(hasCD)pills+=`<span class="sc-pill">cool-down</span>`;
-    pills+=`<span class="sc-pill time-pill">⏱ ${fmtX(totalDur)}</span>`;
-
+    runDurs.forEach(d=>{pills+=`<span class="sr-pill run-p">🏃 ${fmtX(d)}</span>`;});
+    walkDurs.forEach(d=>{pills+=`<span class="sr-pill walk-p">🚶 ${fmtX(d)}</span>`;});
+    if(runSegs.length>1)pills+=`<span class="sr-pill">×${runSegs.length}</span>`;
+    if(hasWU)pills+=`<span class="sr-pill">warmup</span>`;
+    if(hasCD)pills+=`<span class="sr-pill">cool-down</span>`;
+    pills+=`<span class="sr-pill">⏱ ${fmtX(totalDur)}</span>`;
     let badge='';
-    if(isDone)      badge=`<span class="sc-badge scb-done">✓</span>`;
-    else if(isNext) badge=`<span class="sc-badge scb-next">Next</span>`;
-
-    const card=document.createElement('div');
-    card.className='sess-card'+(isSel?' sc-selected':'')+(isDone?' sc-done':'');
-    card.innerHTML=`
-      <div class="sc-num">${si+1}</div>
-      <div class="sc-body">
-        <div class="sc-name">${sess.name}</div>
-        <div class="sc-desc">${sess.desc}</div>
-        <div class="sc-pills">${pills}</div>
-      </div>
-      <div>${badge}</div>`;
-    card.addEventListener('click',()=>{selSess=si;renderSessionPicker();});
-    container.appendChild(card);
+    if(isDone)badge=`<div class="sr-badge srb-done">✓</div>`;
+    else if(isNext)badge=`<div class="sr-badge srb-next">Next</div>`;
+    const row=document.createElement('div');
+    row.className='sess-row'+(isSel?' sr-selected':'');
+    row.innerHTML=`<div class="sr-num">${si+1}</div><div class="sr-body"><div class="sr-name">${sess.name}</div><div class="sr-desc">${sess.desc}</div><div class="sr-pills">${pills}</div></div><div class="sr-right">${badge}</div>`;
+    row.addEventListener('click',()=>{selSess=si;renderSessionList();});
+    container.appendChild(row);
   });
 }
 
-// ═══════════════ SCREEN 3: WORKOUT ═══════════════
+// ═══ S3: WORKOUT ═══
 function startWorkout(resumeData){
-  const lv=LEVELS[selLvl];
-  const sess=lv.sessions[selSess];
-  schedule=sess.segs;
-
-  if(resumeData){
-    schIdx=resumeData.idx; secsLeft=resumeData.secs;
-    totSec=resumeData.tot; runSec=resumeData.run; wlkSec=resumeData.wlk;
-  } else {
-    schIdx=0; secsLeft=schedule[0].dur;
-    totSec=0; runSec=0; wlkSec=0;
-  }
-
-  isRunning=false; clearInterval(th);
-  document.getElementById('woId').textContent=`${lv.emoji} ${sess.name}`;
+  const lv=LEVELS[selLvl];const sess=lv.sessions[selSess];
+  schedule=sess.segs.map(s=>({...s})); // clone
+  if(resumeData){schIdx=resumeData.idx;secsLeft=resumeData.secs;totSec=resumeData.tot;runSec=resumeData.run;wlkSec=resumeData.wlk;}
+  else{schIdx=0;secsLeft=schedule[0].dur;totSec=0;runSec=0;wlkSec=0;}
+  isRunning=false;clearInterval(th);
+  halfAnnouncedAt=-1;targetPace=null;
+  resetGPS();
+  document.getElementById('woSessName').textContent=`${lv.emoji} ${sess.name}`;
   setStartBtn(false);
   document.getElementById('skipBtn').disabled=true;
   document.getElementById('finOverlay').classList.remove('show');
-  buildStrip();
-  show('sWorkout');
-  updateUI();
+  document.getElementById('diffNudge').classList.remove('show');
+  document.getElementById('paceZone').classList.remove('show');
+  buildStrip();show('sWorkout');setPhaseClass('ready');updateUI();
 }
 
 function buildStrip(){
-  const strip=document.getElementById('segStrip');
-  strip.innerHTML='';
-  schedule.forEach((_,i)=>{
-    const d=document.createElement('div');
-    d.className='ss-dot'; d.id=`sd${i}`;
-    strip.appendChild(d);
-  });
+  const strip=document.getElementById('segStrip');strip.innerHTML='';
+  schedule.forEach((_,i)=>{const d=document.createElement('div');d.className='ss-dot';d.id=`sd${i}`;strip.appendChild(d);});
 }
 
-// ═══════════════ TIMER ═══════════════
 function tick(){
   totSec++;
-  const sg=schedule[schIdx];
-  if(sg.phase==='run')runSec++;else wlkSec++;
+  const s=schedule[schIdx];
+  if(s.phase==='run')runSec++;else wlkSec++;
   secsLeft--;
   if(secsLeft<=3&&secsLeft>0)beep();
+  checkHalfway();
   if(secsLeft<=0)advance();
-  else{updateUI();autosave();}
+  else{updateUI();updateDistUI();autosave();}
 }
 
 function advance(){
   schIdx++;
   if(schIdx>=schedule.length){finish();return;}
-  const sg=schedule[schIdx];
-  secsLeft=sg.dur;
-  chime(sg.phase);
-  speakCue(sg);
-  updateUI();
-  autosave();
+  const s=schedule[schIdx];secsLeft=s.dur;
+  chime(s.phase);speakCue(s);haptic([40,30,40]);
+  updateUI();autosave();
 }
 
 function autosave(){
-  const prog=getProg();
-  prog.saved={lvl:selLvl,sess:selSess,idx:schIdx,secs:secsLeft,tot:totSec,run:runSec,wlk:wlkSec};
-  saveProg(prog);
+  const p=getProg();
+  p.saved={lvl:selLvl,sess:selSess,idx:schIdx,secs:secsLeft,tot:totSec,run:runSec,wlk:wlkSec};
+  saveProg(p);
 }
 
+function setPhaseClass(state){document.body.className=`pw-${state}`;}
+
 function updateUI(){
-  const sg=schedule[schIdx]; if(!sg)return;
-  const isRun=sg.phase==='run';
-
-  // Phase card
-  const card=document.getElementById('phaseCard');
-  card.className='phase-card '+(isRun?'pc-run':'pc-walk');
-  document.getElementById('pcName').textContent=sg.label.toUpperCase();
-  document.getElementById('pcIcon').textContent=isRun?'🏃':'🚶';
-  document.getElementById('pcTimer').textContent=fmt(secsLeft);
-  document.getElementById('pcDurLabel').textContent=fmtX(sg.dur)+' interval';
-
-  // Strip
+  const s=schedule[schIdx];if(!s)return;
+  const isRun=s.phase==='run';
+  setPhaseClass(isRun?'run':'walk');
+  document.getElementById('phEye').textContent=isRun?'Running':'Walking';
+  document.getElementById('phPhase').textContent=s.label;
+  document.getElementById('phTimer').textContent=fmt(secsLeft);
+  document.getElementById('phDur').textContent=fmtX(s.dur)+' interval';
   schedule.forEach((seg,i)=>{
-    const d=document.getElementById(`sd${i}`); if(!d)return;
+    const d=document.getElementById(`sd${i}`);if(!d)return;
     const r=seg.phase==='run';
-    if(i<schIdx)         d.className='ss-dot '+(r?'ss-run-done':'ss-walk-done');
-    else if(i===schIdx)  d.className='ss-dot '+(r?'ss-run-active':'ss-walk-active');
-    else                 d.className='ss-dot '+(r?'ss-run-ahead':'ss-walk-ahead');
+    if(i<schIdx)d.className='ss-dot ss-done';
+    else if(i===schIdx)d.className='ss-dot '+(r?'ss-active-run':'ss-active-walk');
+    else d.className='ss-dot '+(r?'ss-ahead-run':'ss-ahead-walk');
   });
-
-  document.getElementById('plLeft').textContent=`Segment ${schIdx+1} of ${schedule.length}`;
-  document.getElementById('plRight').textContent=fmt(totSec)+' elapsed';
-
-  // Next
+  document.getElementById('slLeft').textContent=`${schIdx+1} / ${schedule.length}`;
+  document.getElementById('slRight').textContent=fmt(totSec)+' elapsed';
   const nx=schedule[schIdx+1];
-  document.getElementById('ncIcon').textContent=nx?(nx.phase==='run'?'🏃':'🚶'):'🏁';
-  document.getElementById('ncText').innerHTML=nx
-    ?`Next: <strong>${nx.label}</strong> · <strong>${fmtX(nx.dur)}</strong>`
-    :`<strong>Last segment — finish strong!</strong>`;
-
-  // Stats
+  document.getElementById('nuVal').textContent=nx?nx.label:'Done!';
+  document.getElementById('nuDur').textContent=nx?`· ${fmtX(nx.dur)}`:'';
   document.getElementById('sTot').textContent=fmt(totSec);
   document.getElementById('sRun').textContent=fmt(runSec);
   document.getElementById('sWlk').textContent=fmt(wlkSec);
-
-  // Main button bg
   const mb=document.getElementById('startBtn');
   if(isRunning)mb.className='c-main'+(isRun?'':' walk-bg');
 }
 
 function setStartBtn(running){
   const b=document.getElementById('startBtn');
-  if(running){
-    b.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
-  } else {
-    b.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> ${totSec>0?'Resume':'Start'}`;
-    b.className='c-main';
-  }
+  if(running){b.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;}
+  else{b.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> ${totSec>0?'Resume':'Start'}`;b.className='c-main';}
 }
 
 function doStartPause(){
   if(isRunning){
-    clearInterval(th);isRunning=false;setStartBtn(false);
-    window.speechSynthesis?.cancel();
-    if(P.voice){const u=new SpeechSynthesisUtterance('Paused');u.rate=1.05;window.speechSynthesis.speak(u);}
+    clearInterval(th);isRunning=false;setStartBtn(false);stopGPS();
+    document.getElementById('diffNudge').classList.remove('show');
+    window.speechSynthesis?.cancel();speak('Paused');
   } else {
-    ac().resume();isRunning=true;th=setInterval(tick,1000);
-    setStartBtn(true);
+    ac().resume();isRunning=true;th=setInterval(tick,1000);setStartBtn(true);
     document.getElementById('skipBtn').disabled=false;
+    document.getElementById('diffNudge').classList.add('show');
     if(schIdx===0&&secsLeft===schedule[0].dur){chime(schedule[0].phase);speakCue(schedule[0]);}
-    updateUI();
+    startGPS();updateUI();
   }
 }
 
-function doSkip(){if(!isRunning)return;beep();advance();}
+function doSkip(){if(!isRunning)return;beep();haptic([20]);advance();}
 
 function doReset(){
   clearInterval(th);isRunning=false;
-  schIdx=0;secsLeft=schedule[0]?.dur||0;
-  totSec=0;runSec=0;wlkSec=0;
-  setStartBtn(false);
-  document.getElementById('skipBtn').disabled=true;
+  schIdx=0;secsLeft=schedule[0]?.dur||0;totSec=0;runSec=0;wlkSec=0;
+  halfAnnouncedAt=-1;targetPace=null;
+  setStartBtn(false);document.getElementById('skipBtn').disabled=true;
   document.getElementById('finOverlay').classList.remove('show');
-  const prog=getProg();delete prog.saved;saveProg(prog);
-  updateUI();
+  document.getElementById('diffNudge').classList.remove('show');
+  document.getElementById('paceZone').classList.remove('show');
+  const p=getProg();delete p.saved;saveProg(p);
+  resetGPS();setPhaseClass('ready');
+  document.getElementById('phEye').textContent='Ready';
+  document.getElementById('phPhase').textContent='–';
+  document.getElementById('phTimer').textContent='0:00';
+  document.getElementById('phDur').textContent="Tap Start when you're ready";
+  document.getElementById('sTot').textContent='0:00';
+  document.getElementById('sRun').textContent='0:00';
+  document.getElementById('sWlk').textContent='0:00';
+  document.getElementById('nuVal').textContent='–';
+  document.getElementById('nuDur').textContent='';
 }
 
 function finish(){
   clearInterval(th);isRunning=false;setStartBtn(false);
   document.getElementById('skipBtn').disabled=true;
+  document.getElementById('diffNudge').classList.remove('show');
+  document.getElementById('paceZone').classList.remove('show');
+  stopGPS();
   tone(523,.2);setTimeout(()=>tone(659,.2),220);setTimeout(()=>tone(784,.32),440);
-  if(P.voice)setTimeout(()=>{window.speechSynthesis.cancel();window.speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance('Workout complete! Great job!'),{rate:1.05}));},700);
+  haptic([50,50,50,50,100]);
+  if(P.voice)setTimeout(()=>{window.speechSynthesis.cancel();speak('Workout complete! Great job!');},700);
 
-  const prog=getProg();
-  prog[`d_${selLvl}_${selSess}`]=true;
-  delete prog.saved;
-  saveProg(prog);
+  // Save history
+  const miles=m2mi(totalDistM);
+  const mps=runSec>0&&miles>0.02?miles/runSec:0;
+  const paceStr=mps>0?fmtPace(mps):'–';
+  const lv=LEVELS[selLvl];const sess=lv.sessions[selSess];
+  const p=getProg();
+  p[`d_${selLvl}_${selSess}`]=true;
+  delete p.saved;
+  if(miles>=0.05)p.totalMiles=(p.totalMiles||0)+miles;
+  if(!p.history)p.history=[];
+  p.history.push({ts:Date.now(),name:`${lv.emoji} ${sess.name}`,totSec,runSec,wlkSec,miles,pace:paceStr});
+  if(p.history.length>100)p.history=p.history.slice(-100); // cap at 100
+  saveProg(p);
 
-  // Next session
   let nLvl=selLvl,nSess=selSess+1;
   if(nSess>=LEVELS[selLvl].sessions.length){nLvl++;nSess=0;}
   const hasNext=nLvl<LEVELS.length;
 
-  document.getElementById('finStats').innerHTML=
-    `${fmt(totSec)} total &nbsp;·&nbsp; ${fmt(runSec)} running &nbsp;·&nbsp; ${fmt(wlkSec)} walking`;
+  document.getElementById('finSub').innerHTML=`${fmt(totSec)} total &nbsp;·&nbsp; ${fmt(runSec)} running &nbsp;·&nbsp; ${fmt(wlkSec)} walking`;
+  const fds=document.getElementById('finDistSub');
+  if(miles>=0.05){fds.innerHTML=`${miles.toFixed(2)} miles &nbsp;·&nbsp; ${paceStr}/mi avg pace`;fds.style.display='';}
+  else fds.style.display='none';
 
-  const fnb=document.getElementById('finNextBox');
-  const fnBtn=document.getElementById('finNextBtn');
+  const fnw=document.getElementById('finNextWrap'),fnb=document.getElementById('finNextBtn');
   if(hasNext){
     const nl=LEVELS[nLvl];
     document.getElementById('finNextName').textContent=`${nl.emoji} ${nl.name} · ${nl.sessions[nSess].name}`;
-    fnb.style.display='';fnBtn.style.display='';
-    fnBtn.onclick=()=>{selLvl=nLvl;selSess=nSess;document.getElementById('finOverlay').classList.remove('show');startWorkout(null);};
-  } else {
-    fnb.style.display='none';fnBtn.style.display='none';
-  }
+    fnw.style.display='';fnb.style.display='';
+    fnb.onclick=()=>{selLvl=nLvl;selSess=nSess;document.getElementById('finOverlay').classList.remove('show');startWorkout(null);};
+  } else{fnw.style.display='none';fnb.style.display='none';}
   document.getElementById('finOverlay').classList.add('show');
 }
 
-// ═══════════════ NAVIGATION ═══════════════
-function show(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+// ═══ NAV ═══
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goHome(){clearInterval(th);isRunning=false;setPhaseClass('ready');show('sPlanGrid');renderPlanList();renderHomeStats();}
 
-function goHome(){
-  clearInterval(th);isRunning=false;
-  show('sPlanGrid');
-  renderGrid();
-}
-
-// ═══════════════ SETTINGS ═══════════════
+// ═══ SETTINGS ═══
 function openSettings(){
   document.getElementById('togVoice').checked=P.voice;
   document.getElementById('togBeep').checked=P.beep;
   document.getElementById('togChime').checked=P.chime;
+  document.getElementById('togHaptic').checked=P.haptic;
+  document.getElementById('togSplits').checked=P.splits;
+  document.getElementById('togHalf').checked=P.half;
   document.getElementById('sheetOverlay').classList.add('open');
 }
 function closeSettings(){document.getElementById('sheetOverlay').classList.remove('open');}
 
-// ═══════════════ WAKE LOCK ═══════════════
+// ═══ WAKE LOCK ═══
 let wl=null;
 async function reqWL(){if('wakeLock'in navigator){try{wl=await navigator.wakeLock.request('screen');}catch(e){}}}
-document.addEventListener('visibilitychange',async()=>{if(wl&&document.visibilityState==='visible'&&isRunning)await reqWL();});
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible')await reqWL();});
+reqWL();
 
-// ═══════════════ WIRING ═══════════════
-document.getElementById('spBack').addEventListener('click',()=>{show('sPlanGrid');renderGrid();});
-document.getElementById('woBack').addEventListener('click',()=>{
-  if(isRunning||totSec>0)autosave();
-  window.speechSynthesis?.cancel();
-  show('sPlanGrid');renderGrid();
-});
-document.getElementById('btnStartSess').addEventListener('click',()=>{
-  const prog=getProg();delete prog.saved;saveProg(prog);
-  startWorkout(null);reqWL();
-});
+// ═══ WIRING ═══
+document.getElementById('spBack').addEventListener('click',()=>{show('sPlanGrid');renderPlanList();renderHomeStats();});
+document.getElementById('woBack').addEventListener('click',()=>{if(isRunning||totSec>0)autosave();window.speechSynthesis?.cancel();goHome();});
+document.getElementById('btnStartSess').addEventListener('click',()=>{const p=getProg();delete p.saved;saveProg(p);startWorkout(null);});
 document.getElementById('startBtn').addEventListener('click',doStartPause);
 document.getElementById('skipBtn').addEventListener('click',doSkip);
 document.getElementById('resetBtn').addEventListener('click',doReset);
@@ -1099,89 +975,28 @@ document.getElementById('shSave').addEventListener('click',()=>{
   P.voice=document.getElementById('togVoice').checked;
   P.beep=document.getElementById('togBeep').checked;
   P.chime=document.getElementById('togChime').checked;
+  P.haptic=document.getElementById('togHaptic').checked;
+  P.splits=document.getElementById('togSplits').checked;
+  P.half=document.getElementById('togHalf').checked;
   saveP();closeSettings();
 });
+document.getElementById('resumeStrip').addEventListener('click',()=>{const p=getProg();if(!p.saved)return;selLvl=p.saved.lvl;selSess=p.saved.sess;startWorkout(p.saved);});
+document.getElementById('rsDismiss').addEventListener('click',e=>{e.stopPropagation();const p=getProg();delete p.saved;saveProg(p);document.getElementById('resumeStrip').classList.remove('show');});
+document.getElementById('histBtn').addEventListener('click',()=>{renderHistory();show('sHistory');});
+document.getElementById('histBack').addEventListener('click',()=>{show('sPlanGrid');});
+document.getElementById('diffEasy').addEventListener('click',()=>adjustDifficulty('easier'));
+document.getElementById('diffHard').addEventListener('click',()=>adjustDifficulty('harder'));
 
-// Resume pill handlers
-document.getElementById('resumePill').addEventListener('click',()=>{
-  const prog=getProg(); if(!prog.saved)return;
-  selLvl=prog.saved.lvl;selSess=prog.saved.sess;
-  startWorkout(prog.saved);reqWL();
-});
-document.getElementById('rpDismiss').addEventListener('click',e=>{
-  e.stopPropagation();
-  const prog=getProg();delete prog.saved;saveProg(prog);
-  document.getElementById('resumePill').classList.remove('show');
-});
-
-// ═══════════════ INIT ═══════════════
+// ═══ INIT ═══
 loadP();
-
-// Restore position from progress
 (()=>{
-  const prog=getProg();
-  if(prog.saved){selLvl=prog.saved.lvl;selSess=prog.saved.sess;return;}
-  outer:for(let li=0;li<LEVELS.length;li++){
-    for(let si=0;si<LEVELS[li].sessions.length;si++){
-      if(!prog[`d_${li}_${si}`]){selLvl=li;selSess=si;break outer;}
-    }
-  }
+  const p=getProg();
+  if(p.saved){selLvl=p.saved.lvl;selSess=p.saved.sess;return;}
+  outer:for(let li=0;li<LEVELS.length;li++){for(let si=0;si<LEVELS[li].sessions.length;si++){if(!p[`d_${li}_${si}`]){selLvl=li;selSess=si;break outer;}}}
 })();
-
-renderGrid();
+renderPlanList();
+renderHomeStats();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-
-// ═══════════════ ANIMATED BACKGROUND ═══════════════
-(function() {
-  const canvas = document.getElementById('bgCanvas');
-  const ctx = canvas.getContext('2d');
-
-  let W, H, tick = 0;
-
-  // Three slow-moving orbs
-  const orbs = [
-    { x: 0.15, y: 0.2,  r: 0.45, color: [13, 30, 60],   speed: 0.00018, angle: 0 },
-    { x: 0.8,  y: 0.7,  r: 0.38, color: [10, 40, 55],   speed: 0.00013, angle: 2.1 },
-    { x: 0.5,  y: 1.0,  r: 0.42, color: [20, 20, 50],   speed: 0.00021, angle: 4.2 },
-  ];
-
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  function draw(ts) {
-    ctx.clearRect(0, 0, W, H);
-
-    // Base fill
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0, 0, W, H);
-
-    // Draw each orb as a radial gradient, drifting slowly
-    orbs.forEach(o => {
-      o.angle += o.speed * 16; // ~60fps assumed
-      const cx = (o.x + Math.sin(o.angle) * 0.12) * W;
-      const cy = (o.y + Math.cos(o.angle * 0.7) * 0.1) * H;
-      const radius = o.r * Math.max(W, H);
-
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-      const [r, g, b] = o.color;
-      grad.addColorStop(0,   `rgba(${r},${g},${b},0.55)`);
-      grad.addColorStop(0.5, `rgba(${r},${g},${b},0.18)`);
-      grad.addColorStop(1,   `rgba(${r},${g},${b},0)`);
-
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
-    });
-
-    requestAnimationFrame(draw);
-  }
-
-  window.addEventListener('resize', resize);
-  resize();
-  requestAnimationFrame(draw);
-})();
-
 </script>
 </body>
 </html>
